@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Студенты группы</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:insert="~{blocks/header :: header}"></div>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <span th:text="'Студенты группы: ' + ${studentGroup.grade} + '. Метод обучения: ' + ${teachingMethod.nameMethod}"></span>
+        </h1>
+        <a th:href="@{/student/add}" class="btn btn-primary">Добавить студента</a>
+    </div>
+
+    <!-- Список студентов -->
+    <div class="list-group">
+        <div th:each="student : ${students}" class="list-group-item">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 th:text="${student.fullName}"></h5>
+<!--                    <small class="text-muted"-->
+<!--                           th:text="${student.teachingMethod.nameMethod}"></small>-->
+                </div>
+                <a th:href="@{'/student/' + ${student.idStudent}}"
+                   class="btn btn-sm btn-outline-primary">Подробнее</a>
+            </div>
+        </div>
+
+
+    </div>
+
+    <div class="mt-4">
+        <a href="/studentGroup" class="btn btn-outline-secondary">Назад к списку групп</a>
+    </div>
+</div>
+
+<div th:insert="~{blocks/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
