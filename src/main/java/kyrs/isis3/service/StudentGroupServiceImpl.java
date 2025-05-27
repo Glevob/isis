@@ -60,4 +60,8 @@ public class StudentGroupServiceImpl implements StudentGroupService{
     public void deleteStudentGroupById(Long id) {
         studentGroupRepository.deleteById(id);
     }
+
+    public List<StudentGroup> getGroupsByTeachingMethodId(Long methodId) {
+        return studentGroupRepository.findByTeachingMethodIdTeachingMethod(methodId);
+    }
 }

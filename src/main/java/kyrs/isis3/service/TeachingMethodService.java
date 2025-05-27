@@ -12,4 +12,5 @@ public interface TeachingMethodService {
     Optional<TeachingMethod> getTeachingMethodById(Long id);
     Optional<TeachingMethod> putTeachingMethodById(Long id, TeachingMethod updatedTeachingMethod);
     void deleteTeachingMethodById(Long id);
+
 }

@@ -53,7 +53,7 @@
     <div class="row row-cols-1 row-cols-md-3 g-4">
         <div th:each="teachingMethod : ${teachingMethods}" class="col">
             <div class="card method-card h-100"
-                 th:onclick="'window.location.href=\'/teachingMethod/' + ${teachingMethod.idTeachingMethod} + '/students\''">
+                 th:onclick="'window.location.href=\'/teachingMethod/' + ${teachingMethod.idTeachingMethod} + '/groups\''">
                 <div class="card-body">
                     <h5 class="card-title" th:text="${teachingMethod.nameMethod}">Метод обучения</h5>
 

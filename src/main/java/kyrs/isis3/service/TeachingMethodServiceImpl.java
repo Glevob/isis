@@ -47,4 +47,6 @@ public class TeachingMethodServiceImpl implements TeachingMethodService {
     public void deleteTeachingMethodById(Long id) {
         teachingMethodRepository.deleteById(id);
     }
+
+
 }

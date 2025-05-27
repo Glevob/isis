@@ -9,5 +9,5 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 
 public interface StudentRepository extends JpaRepository<Student, Long>, PagingAndSortingRepository<Student, Long> {
-
+    List<Student> findByStudentGroupIdStudentGroup(Long idStudentGroup);
 }

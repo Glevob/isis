@@ -7,6 +7,9 @@ import kyrs.isis3.model.TeachingMethod;
 import kyrs.isis3.repository.StudentGroupRepository;
 import kyrs.isis3.repository.StudentRepository;
 import kyrs.isis3.repository.TeachingMethodRepository;
+import kyrs.isis3.service.StudentGroupService;
+import kyrs.isis3.service.StudentService;
+import kyrs.isis3.service.TeachingMethodService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
+import java.util.Optional;
 
 @Controller
 public class StudentController {
@@ -25,6 +29,12 @@ public class StudentController {
     private StudentGroupRepository studentGroupRepository;
     @Autowired
     private TeachingMethodRepository teachingMethodRepository;
+    @Autowired
+    private StudentService studentService;
+    @Autowired
+    private StudentGroupService studentGroupService;
+    @Autowired
+    private TeachingMethodService teachingMethodService;
 
     @GetMapping("/student")
     public String studentMain(Model model) {
@@ -73,7 +83,7 @@ public class StudentController {
     }
 
     // Страница со студентами конкретной группы
-    @GetMapping("/student/studentGroup/{studentGroupId}")
+    @GetMapping("/studentGroup/{studentGroupId}")
     public String listStudentsInGroup(@PathVariable Long studentGroupId, Model model) {
         StudentGroup studentGroup = studentGroupRepository.findById(studentGroupId)
                 .orElseThrow(() -> new IllegalArgumentException("Группа не найдена"));
@@ -159,7 +169,28 @@ public class StudentController {
 
 
 
+    @GetMapping("/studentGroup/{studentGroupId}/students")
+    public String showStudentsByGroup(@PathVariable Long studentGroupId, Model model) {
+        Optional<StudentGroup> studentGroup = studentGroupService.getStudentGroupById(studentGroupId);
+        if (studentGroup.isPresent()) {
+            model.addAttribute("studentGroup", studentGroup.get());
+            model.addAttribute("students", studentService.getStudentsByGroupId(studentGroupId));
+            return "studentGroup-students";
+        }
+        return "redirect:/studentGroup";
+    }
 
+
+    @GetMapping("/teachingMethod/{teachingMethodId}/groups")
+    public String showGroupsByMethod(@PathVariable Long teachingMethodId, Model model) {
+        Optional<TeachingMethod> teachingMethod = teachingMethodService.getTeachingMethodById(teachingMethodId);
+        if (teachingMethod.isPresent()) {
+            model.addAttribute("teachingMethod", teachingMethod.get());
+            model.addAttribute("studentGroups", studentGroupService.getGroupsByTeachingMethodId(teachingMethodId));
+            return "teachingMethod-groups";
+        }
+        return "redirect:/teachingMethod";
+    }
 
 
 

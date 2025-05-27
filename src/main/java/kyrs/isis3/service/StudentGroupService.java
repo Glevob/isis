@@ -11,5 +11,6 @@ public interface StudentGroupService {
     Optional<StudentGroup> getStudentGroupById(Long id);
     Optional<StudentGroup> putStudentGroupById(Long id, StudentGroup updatedStudentGroup);
     void deleteStudentGroupById(Long id);
+    List<StudentGroup> getGroupsByTeachingMethodId(Long methodId);
 
 }

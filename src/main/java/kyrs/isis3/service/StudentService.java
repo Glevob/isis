@@ -15,4 +15,5 @@ public interface StudentService {
     Optional<Student> putStudentById(Long id, Student updatedStudent);
 
     void deleteStudentById(Long id);
+    List<Student> getStudentsByGroupId(Long groupId);
 }
