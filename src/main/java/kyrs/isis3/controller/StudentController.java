@@ -66,10 +66,10 @@ public class StudentController {
     }
 
     @PostMapping("/studentGroup/add")
-    public String addStudentGroup (@RequestParam String grade,
+    public String addStudentGroup (@RequestParam String nameGroup,
                                    @RequestParam Long teachingMethodId, Model model) {
         TeachingMethod teachingMethod = teachingMethodRepository.findById(teachingMethodId).orElseThrow();
-        StudentGroup studentGroup = new StudentGroup(grade, teachingMethod);
+        StudentGroup studentGroup = new StudentGroup(nameGroup, teachingMethod);
         studentGroupRepository.save(studentGroup);
         return "redirect:/student";
     }
@@ -98,16 +98,6 @@ public class StudentController {
         List<TeachingMethod> teachingMethods = teachingMethodRepository.findAll();
         model.addAttribute("teachingMethods", teachingMethods);
         return "teachingMethod-list"; // имя HTML-шаблона
-    }
-
-    // Страница со студентами конкретной группы
-    @GetMapping("/student/teachingMethod/{teachingMethodId}")
-    public String listStudentsInTeachingMethod(@PathVariable Long teachingMethodId, Model model) {
-        TeachingMethod teachingMethod = teachingMethodRepository.findById(teachingMethodId)
-                .orElseThrow(() -> new IllegalArgumentException("Метод обучения не найден"));
-        model.addAttribute("teachingMethod", teachingMethod);
-        model.addAttribute("studentGroups", teachingMethod.getStudentGroups());
-        return "teachingMethod-students";
     }
 
     @GetMapping("/teachingMethod/add")

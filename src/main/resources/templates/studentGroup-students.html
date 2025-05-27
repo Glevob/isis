@@ -12,7 +12,7 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>
-            <span th:text="'Студенты группы: ' + ${studentGroup.grade} + '. Метод обучения: ' + ${studentGroup.teachingMethod.nameMethod}"></span>
+            <span th:text="'Студенты группы: ' + ${studentGroup.nameGroup} + '. Метод обучения: ' + ${studentGroup.teachingMethod.nameMethod}"></span>
         </h1>
         <a th:href="@{/student/add}" class="btn btn-primary">Добавить студента</a>
     </div>
@@ -23,9 +23,14 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h5 th:text="${student.fullName}"></h5>
+                    <small class="text-muted" th:text="'ID: ' + ${student.idStudent}"></small>
                 </div>
-                <a th:href="@{'/student/' + ${student.idStudent}}"
-                   class="btn btn-sm btn-outline-primary">Подробнее</a>
+                <div>
+                    <a th:href="@{'/student/' + ${student.idStudent}}"
+                       class="btn btn-sm btn-outline-primary me-2">Подробнее</a>
+                    <a th:href="@{/students/{studentId}/grades(studentId=${student.idStudent})}"
+                       class="btn btn-sm btn-outline-secondary">Оценки</a>
+                </div>
             </div>
         </div>
 

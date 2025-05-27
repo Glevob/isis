@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @ToString
 @Entity(name="student")
 @Table(name="student")
@@ -25,15 +28,12 @@ public class Student {
     @JoinColumn(name="id_student_group")
     private StudentGroup studentGroup;
 
-//    @ManyToOne
-//    @JoinColumn(name="id_teaching_method")
-//    private TeachingMethod teachingMethod;
 
-    public Student(String fullName, StudentGroup studentGroup) {//, TeachingMethod teachingMethod) {
+    public Student(String fullName, StudentGroup studentGroup) {
         this.fullName = fullName;
         this.studentGroup = studentGroup;
-//        this.teachingMethod = teachingMethod;
     }
 
     public Student() {}
+
 }

@@ -43,8 +43,8 @@ public class StudentGroupServiceImpl implements StudentGroupService{
         Optional<StudentGroup> existingStudentGroup = studentGroupRepository.findById(id);
         if (existingStudentGroup.isPresent()) {
             StudentGroup studentGroupToUpdate = existingStudentGroup.get();
-            if (updatedStudentGroup.getGrade() != null) {
-                studentGroupToUpdate.setGrade(updatedStudentGroup.getGrade());
+            if (updatedStudentGroup.getNameGroup() != null) {
+                studentGroupToUpdate.setNameGroup(updatedStudentGroup.getNameGroup());
             }
 
             if(updatedStudentGroup.getTeachingMethod() != null && updatedStudentGroup.getTeachingMethod().getIdTeachingMethod() != null) {

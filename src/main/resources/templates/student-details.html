@@ -12,7 +12,7 @@
     <h1>Студент</h1>
     <div class="alert alert-info mt-2">
         <p th:text="'ФИО: ' + ${student.fullName}"></p>
-        <p th:text="'Группа: ' + ${student.studentGroup.getGrade()}"></p>
+        <p th:text="'Группа: ' + ${student.studentGroup.getNameGroup()}"></p>
         <p th:text="'Метод обучения: ' + ${student.studentGroup.teachingMethod.getNameMethod()}"></p>
 
         <a th:href="@{/student/{id}/edit(id=${student.idStudent})}" class="btn btn-warning">Редактировать</a><br><br>

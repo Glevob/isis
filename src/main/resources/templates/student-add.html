@@ -17,7 +17,7 @@
         <label for="studentGroups">Выберите группу:</label>
         <select name="studentGroupId" id="studentGroups" class="form-control" required>
             <option th:each="studentGroup : ${studentGroups}" th:value="${studentGroup.idStudentGroup}"
-                    th:text="${studentGroup.grade}"></option>
+                    th:text="${studentGroup.nameGroup}"></option>
         </select><br>
         <button type="button" class="btn btn-secondary" onclick="window.location.href='/studentGroup/add'">Добавить групуп</button><br><br>
 

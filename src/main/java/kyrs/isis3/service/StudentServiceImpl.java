@@ -71,4 +71,6 @@ public class StudentServiceImpl implements StudentService{
     public List<Student> getStudentsByGroupId(Long groupId) {
         return studentRepository.findByStudentGroupIdStudentGroup(groupId);
     }
+
+
 }

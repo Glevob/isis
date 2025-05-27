@@ -40,7 +40,7 @@
             <div class="card group-card h-100"
                  th:onclick="'window.location.href=\'/studentGroup/' + ${studentGroup.idStudentGroup} + '/students\''">
                 <div class="card-body">
-                    <h5 class="card-title" th:text="${studentGroup.grade}">Название группы</h5>
+                    <h5 class="card-title" th:text="${studentGroup.nameGroup}">Название группы</h5>
                     <h3 class="card-title" th:text="${studentGroup.teachingMethod.nameMethod}">Метод обучения</h3>
                     <div class="d-flex justify-content-between align-items-center">
                         <span class="text-muted">Количество студентов:</span>

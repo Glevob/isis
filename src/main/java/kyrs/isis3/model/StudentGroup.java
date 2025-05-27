@@ -21,8 +21,8 @@ public class StudentGroup {
     @SequenceGenerator(name="id_student_group_seq", sequenceName = "id_student_group_seq", initialValue = 1, allocationSize = 1)
     private Long idStudentGroup;
 
-    @Column(name="grade")
-    private String grade;
+    @Column(name="name_group")
+    private String nameGroup;
 
     @JsonIgnore
     @OneToMany(mappedBy = "studentGroup")
@@ -32,8 +32,8 @@ public class StudentGroup {
     @JoinColumn(name="id_teaching_method")
     private TeachingMethod teachingMethod;
 
-    public StudentGroup(String grade, TeachingMethod teachingMethod) {
-        this.grade = grade;
+    public StudentGroup(String nameGroup, TeachingMethod teachingMethod) {
+        this.nameGroup = nameGroup;
         this.teachingMethod = teachingMethod;
     }
 
