@@ -23,17 +23,12 @@ public class StudentServiceImpl implements StudentService{
     @Override
     public void addStudent(Student student) {
         StudentGroup studentGroup = student.getStudentGroup();
-        TeachingMethod teachingMethod = student.getTeachingMethod();
 
         if (studentGroup != null && studentGroup.getIdStudentGroup() != null) {
             studentGroup = studentGroupRepository.findById(studentGroup.getIdStudentGroup()).orElse(null);
         }
-        if (teachingMethod != null && teachingMethod.getIdTeachingMethod() != null) {
-            teachingMethod = teachingMethodRepository.findById(teachingMethod.getIdTeachingMethod()).orElse(null);
-        }
 
         student.setStudentGroup(studentGroup);
-        student.setTeachingMethod(teachingMethod);
 
         studentRepository.save(student);
     }
@@ -57,10 +52,6 @@ public class StudentServiceImpl implements StudentService{
             if(updatedStudent.getStudentGroup() != null && updatedStudent.getStudentGroup().getIdStudentGroup() != null) {
                 StudentGroup studentGroup = studentGroupRepository.findById(updatedStudent.getStudentGroup().getIdStudentGroup()).orElse(null);
                 studentToUpdate.setStudentGroup(studentGroup);
-            }
-            if(updatedStudent.getTeachingMethod() != null && updatedStudent.getTeachingMethod().getIdTeachingMethod() != null) {
-                TeachingMethod teachingMethod = teachingMethodRepository.findById(updatedStudent.getTeachingMethod().getIdTeachingMethod()).orElse(null);
-                studentToUpdate.setTeachingMethod(teachingMethod);
             }
 
             if(updatedStudent.getFullName() != null) {

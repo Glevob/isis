@@ -12,6 +12,14 @@
     <h1>Добавление группы</h1>
     <form action="/studentGroup/add" method="post">
         <input type="text" name="grade" placeholder="Введите наименование группы" class="form-control"><br>
+
+        <label for="teachingMethods">Выберите метод обучения:</label>
+        <select name="teachingMethodId" id="teachingMethods" class="form-control" required>
+            <option th:each="teachingMethod : ${teachingMethods}" th:value="${teachingMethod.idTeachingMethod}"
+                    th:text="${teachingMethod.getNameMethod()}"></option>
+        </select><br>
+        <button type="button" class="btn btn-secondary" onclick="window.location.href='/teachingMethod/add'">Добавить метод обучения</button><br><br>
+
         <button type="submit" class="btn btn-success">Добавить группу</button>
     </form>
 </div>

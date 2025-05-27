@@ -6,22 +6,37 @@
     <title>Список методов обучения</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        .group-card {
+        .method-card {
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        .group-card:hover {
+        .method-card:hover {
             transform: translateY(-3px);
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .student-count-badge {
+        .count-badge {
             font-size: 0.9rem;
         }
-        .empty-groups {
+        .students-badge {
+            background-color: #0d6efd;
+        }
+        .groups-badge {
+            background-color: #198754;
+        }
+        .empty-methods {
             min-height: 200px;
             display: flex;
             align-items: center;
             justify-content: center;
+        }
+        .stats-container {
+            display: flex;
+            gap: 10px;
+        }
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
     </style>
 </head>
@@ -34,19 +49,31 @@
         <a href="/teachingMethod/add" class="btn btn-primary">Добавить метод обучения</a>
     </div>
 
-    <!-- Список групп -->
+    <!-- Список методов обучения -->
     <div class="row row-cols-1 row-cols-md-3 g-4">
         <div th:each="teachingMethod : ${teachingMethods}" class="col">
-            <div class="card group-card h-100"
+            <div class="card method-card h-100"
                  th:onclick="'window.location.href=\'/teachingMethod/' + ${teachingMethod.idTeachingMethod} + '/students\''">
                 <div class="card-body">
                     <h5 class="card-title" th:text="${teachingMethod.nameMethod}">Метод обучения</h5>
-                    <!--                    <h3 class="card-title" th:text="${teachingMethod.nameMethod}">Метод обучения</h3>-->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted">Количество студентов:</span>
-                        <span class="badge bg-primary student-count-badge"
-                              th:text="${teachingMethod.students.size()}">0</span>
+
+                    <div class="stats-container mt-3">
+                        <div class="stat-item">
+                            <span class="text-muted small">Групп:</span>
+                            <span class="badge groups-badge count-badge"
+                                  th:text="${teachingMethod.studentGroups.size()}">0</span>
+                        </div>
                     </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Сообщение если методов нет -->
+        <div th:if="${teachingMethods.empty}" class="col-12">
+            <div class="card empty-methods">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Методы обучения не найдены</h5>
+                    <p class="text-muted">Добавьте первый метод обучения, нажав на кнопку выше</p>
                 </div>
             </div>
         </div>

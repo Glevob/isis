@@ -37,7 +37,7 @@ public class StudentController {
     @GetMapping("/student/add")
     public String studentAdd(Model model) {
         model.addAttribute("studentGroups", studentGroupRepository.findAll());
-        model.addAttribute("teachingMethods", teachingMethodRepository.findAll());
+//        model.addAttribute("teachingMethods", teachingMethodRepository.findAll());
         return "student-add";
     }
 
@@ -51,12 +51,15 @@ public class StudentController {
 
     @GetMapping("/studentGroup/add")
     public String studentGroupAdd(Model model) {
+        model.addAttribute("teachingMethods", teachingMethodRepository.findAll());
         return "studentGroup-add";
     }
 
     @PostMapping("/studentGroup/add")
-    public String addStudentGroup (@RequestParam String grade , Model model) {
-        StudentGroup studentGroup = new StudentGroup(grade);
+    public String addStudentGroup (@RequestParam String grade,
+                                   @RequestParam Long teachingMethodId, Model model) {
+        TeachingMethod teachingMethod = teachingMethodRepository.findById(teachingMethodId).orElseThrow();
+        StudentGroup studentGroup = new StudentGroup(grade, teachingMethod);
         studentGroupRepository.save(studentGroup);
         return "redirect:/student";
     }
@@ -70,7 +73,7 @@ public class StudentController {
     }
 
     // Страница со студентами конкретной группы
-    @GetMapping("/{studentGroupId}/students")
+    @GetMapping("/student/studentGroup/{studentGroupId}")
     public String listStudentsInGroup(@PathVariable Long studentGroupId, Model model) {
         StudentGroup studentGroup = studentGroupRepository.findById(studentGroupId)
                 .orElseThrow(() -> new IllegalArgumentException("Группа не найдена"));
@@ -88,12 +91,12 @@ public class StudentController {
     }
 
     // Страница со студентами конкретной группы
-    @GetMapping("/{teachingMethodId}/students")
+    @GetMapping("/student/teachingMethod/{teachingMethodId}")
     public String listStudentsInTeachingMethod(@PathVariable Long teachingMethodId, Model model) {
         TeachingMethod teachingMethod = teachingMethodRepository.findById(teachingMethodId)
                 .orElseThrow(() -> new IllegalArgumentException("Метод обучения не найден"));
         model.addAttribute("teachingMethod", teachingMethod);
-        model.addAttribute("students", teachingMethod.getStudents());
+        model.addAttribute("studentGroups", teachingMethod.getStudentGroups());
         return "teachingMethod-students";
     }
 
@@ -111,12 +114,10 @@ public class StudentController {
 
     @PostMapping("/student/add")
     public String addStudent(@RequestParam Long studentGroupId,
-                             @RequestParam Long teachingMethodId,
                              @RequestParam String fullName,
                              Model model) {
         StudentGroup studentGroup = studentGroupRepository.findById(studentGroupId).orElseThrow();
-        TeachingMethod teachingMethod = teachingMethodRepository.findById(teachingMethodId).orElseThrow();
-        Student student = new Student(fullName, studentGroup, teachingMethod);
+        Student student = new Student(fullName, studentGroup);
         studentRepository.save(student);
         return "redirect:/student";
     }
@@ -133,21 +134,17 @@ public class StudentController {
         Student student = studentRepository.findById(idstudent).orElseThrow();
         model.addAttribute("student", student);
         model.addAttribute("studentGroups", studentGroupRepository.findAll());
-        model.addAttribute("teachingMethods", teachingMethodRepository.findAll());
         return "student-edit";
     }
 
     @PostMapping("/student/{id}/edit")
     public String studentUpdate(@PathVariable(value = "id") long idstudent,
                                 @RequestParam Long studentGroupId,
-                                @RequestParam Long teachingMethodId,
                                 @RequestParam String fullName) {
         Student student = studentRepository.findById(idstudent).orElseThrow();
         student.setFullName(fullName);
         StudentGroup studentGroup = studentGroupRepository.findById(studentGroupId).orElseThrow();
-        TeachingMethod teachingMethod = teachingMethodRepository.findById(teachingMethodId).orElseThrow();
         student.setStudentGroup(studentGroup);
-        student.setTeachingMethod(teachingMethod);
         studentRepository.save(student);
         return "redirect:/student/" + idstudent;
     }

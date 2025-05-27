@@ -28,8 +28,13 @@ public class StudentGroup {
     @OneToMany(mappedBy = "studentGroup")
     private List<Student> students;
 
-    public StudentGroup(String grade) {
+    @ManyToOne
+    @JoinColumn(name="id_teaching_method")
+    private TeachingMethod teachingMethod;
+
+    public StudentGroup(String grade, TeachingMethod teachingMethod) {
         this.grade = grade;
+        this.teachingMethod = teachingMethod;
     }
 
     public StudentGroup() {}

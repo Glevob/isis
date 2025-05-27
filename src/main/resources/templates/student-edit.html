@@ -24,14 +24,14 @@
             </select><br>
             <button type="button" class="btn btn-secondary" onclick="window.location.href='/post/add'">Добавить группу</button><br><br>
 
-            <label>Метод обучения студента</label>
-            <label for="teachingMethod">Выберите метод обучения:</label>
-            <select name="teachingMethodId" id="teachingMethod" class="form-control">
-                <option th:each="teachingMethod : ${teachingMethods}" th:value="${teachingMethod.idTeachingMethod}"
-                        th:text="${teachingMethod.nameMethod}"
-                        th:selected="${teachingMethod.idTeachingMethod == el.teachingMethod.idTeachingMethod}"></option>
-            </select><br>
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='/post/add'">Добавить метод обучения</button><br><br>
+<!--            <label>Метод обучения студента</label>-->
+<!--            <label for="teachingMethod">Выберите метод обучения:</label>-->
+<!--            <select name="teachingMethodId" id="teachingMethod" class="form-control">-->
+<!--                <option th:each="teachingMethod : ${teachingMethods}" th:value="${teachingMethod.idTeachingMethod}"-->
+<!--                        th:text="${teachingMethod.nameMethod}"-->
+<!--                        th:selected="${teachingMethod.idTeachingMethod == el.teachingMethod.idTeachingMethod}"></option>-->
+<!--            </select><br>-->
+<!--            <button type="button" class="btn btn-secondary" onclick="window.location.href='/post/add'">Добавить метод обучения</button><br><br>-->
 
 
             <button type="submit" class="btn btn-success">Обновить</button>

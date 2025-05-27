@@ -21,14 +21,6 @@
         </select><br>
         <button type="button" class="btn btn-secondary" onclick="window.location.href='/studentGroup/add'">Добавить групуп</button><br><br>
 
-        <label for="teachingMethods">Выберите метод обучения:</label>
-        <select name="teachingMethodId" id="teachingMethods" class="form-control" required>
-            <option th:each="teachingMethod : ${teachingMethods}" th:value="${teachingMethod.idTeachingMethod}"
-                    th:text="${teachingMethod.getNameMethod()}"></option>
-        </select><br>
-        <button type="button" class="btn btn-secondary" onclick="window.location.href='/teachingMethod/add'">Добавить метод обучения</button><br><br>
-
-
         <button type="submit" class="btn btn-success">Добавить студента</button>
     </form>
 

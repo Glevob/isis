@@ -1,7 +1,10 @@
 package kyrs.isis3.service;
 
+import kyrs.isis3.model.Student;
 import kyrs.isis3.model.StudentGroup;
+import kyrs.isis3.model.TeachingMethod;
 import kyrs.isis3.repository.StudentGroupRepository;
+import kyrs.isis3.repository.TeachingMethodRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +15,16 @@ import java.util.Optional;
 @Service
 public class StudentGroupServiceImpl implements StudentGroupService{
     private final StudentGroupRepository studentGroupRepository;
+    private final TeachingMethodRepository teachingMethodRepository;
 
     @Override
     public void addStudentGroup(StudentGroup studentGroup) {
+        TeachingMethod teachingMethod = studentGroup.getTeachingMethod();
+        if (teachingMethod != null && teachingMethod.getIdTeachingMethod() != null) {
+            teachingMethod = teachingMethodRepository.findById(teachingMethod.getIdTeachingMethod()).orElse(null);
+        }
+        studentGroup.setTeachingMethod(teachingMethod);
+
         studentGroupRepository.save(studentGroup);
     }
 
@@ -35,6 +45,11 @@ public class StudentGroupServiceImpl implements StudentGroupService{
             StudentGroup studentGroupToUpdate = existingStudentGroup.get();
             if (updatedStudentGroup.getGrade() != null) {
                 studentGroupToUpdate.setGrade(updatedStudentGroup.getGrade());
+            }
+
+            if(updatedStudentGroup.getTeachingMethod() != null && updatedStudentGroup.getTeachingMethod().getIdTeachingMethod() != null) {
+                TeachingMethod teachingMethod = teachingMethodRepository.findById(updatedStudentGroup.getTeachingMethod().getIdTeachingMethod()).orElse(null);
+                studentGroupToUpdate.setTeachingMethod(teachingMethod);
             }
             studentGroupRepository.save(studentGroupToUpdate);
         }

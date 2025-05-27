@@ -23,8 +23,6 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h5 th:text="${student.fullName}"></h5>
-<!--                    <small class="text-muted"-->
-<!--                           th:text="${student.teachingMethod.nameMethod}"></small>-->
                 </div>
                 <a th:href="@{'/student/' + ${student.idStudent}}"
                    class="btn btn-sm btn-outline-primary">Подробнее</a>

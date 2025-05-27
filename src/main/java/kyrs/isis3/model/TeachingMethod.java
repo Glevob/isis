@@ -26,7 +26,7 @@ public class TeachingMethod {
 
     @JsonIgnore
     @OneToMany(mappedBy = "teachingMethod")
-    private List<Student> students;
+    private List<StudentGroup> studentGroups;
 
     public TeachingMethod(String nameMethod) {
         this.nameMethod = nameMethod;

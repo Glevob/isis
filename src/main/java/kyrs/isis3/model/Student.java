@@ -25,14 +25,14 @@ public class Student {
     @JoinColumn(name="id_student_group")
     private StudentGroup studentGroup;
 
-    @ManyToOne
-    @JoinColumn(name="id_teaching_method")
-    private TeachingMethod teachingMethod;
+//    @ManyToOne
+//    @JoinColumn(name="id_teaching_method")
+//    private TeachingMethod teachingMethod;
 
-    public Student(String fullName, StudentGroup studentGroup, TeachingMethod teachingMethod) {
+    public Student(String fullName, StudentGroup studentGroup) {//, TeachingMethod teachingMethod) {
         this.fullName = fullName;
         this.studentGroup = studentGroup;
-        this.teachingMethod = teachingMethod;
+//        this.teachingMethod = teachingMethod;
     }
 
     public Student() {}
