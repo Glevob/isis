@@ -1,5 +1,6 @@
 package kyrs.isis3.service;
 
+import jakarta.transaction.Transactional;
 import kyrs.isis3.model.StudentGroup;
 
 import java.util.List;
@@ -12,5 +13,7 @@ public interface StudentGroupService {
     Optional<StudentGroup> putStudentGroupById(Long id, StudentGroup updatedStudentGroup);
     void deleteStudentGroupById(Long id);
     List<StudentGroup> getGroupsByTeachingMethodId(Long methodId);
+    @Transactional
+    void deleteGroupWithStudents(Long id);
 
 }

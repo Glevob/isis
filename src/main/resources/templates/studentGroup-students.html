@@ -15,6 +15,14 @@
             <span th:text="'Студенты группы: ' + ${studentGroup.nameGroup} + '. Метод обучения: ' + ${studentGroup.teachingMethod.nameMethod}"></span>
         </h1>
         <div>
+            <button type="button" class="btn btn-danger me-2"
+                    data-bs-toggle="modal"
+                    data-bs-target="#deleteGroupModal"
+                    th:attr="data-bs-group-id=${studentGroup.idStudentGroup},
+                            data-bs-group-name=${studentGroup.nameGroup},
+                            data-bs-students-count=${students.size()}">
+                Удалить группу
+            </button>
             <a th:href="@{'/studentGroup/' + ${studentGroup.idStudentGroup} + '/grades'}"
                class="btn btn-primary me-2">Оценки группы</a>
             <a th:href="@{/student/add}" class="btn btn-primary">Добавить студента</a>
@@ -37,8 +45,6 @@
                 </div>
             </div>
         </div>
-
-
     </div>
 
     <div class="mt-4">
@@ -46,8 +52,46 @@
     </div>
 </div>
 
+<!-- Модальное окно подтверждения удаления -->
+<div class="modal fade" id="deleteGroupModal" tabindex="-1" aria-labelledby="deleteGroupModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteGroupModalLabel">Подтверждение удаления</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы действительно хотите удалить группу <strong><span id="groupNameToDelete"></span></strong>?</p>
+                <p class="text-danger">Будет также удалено <strong><span id="studentsCountToDelete"></span></strong> студентов этой группы!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+                <form id="deleteGroupForm" method="post">
+                    <input type="hidden" name="_method" value="delete">
+                    <button type="submit" class="btn btn-danger">Удалить</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div th:insert="~{blocks/footer :: footer}"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteModal = document.getElementById('deleteGroupModal');
+        deleteModal.addEventListener('show.bs.modal', function(event) {
+            const button = event.relatedTarget;
+            const groupId = button.getAttribute('data-bs-group-id');
+            const groupName = button.getAttribute('data-bs-group-name');
+            const studentsCount = button.getAttribute('data-bs-students-count');
+
+            document.getElementById('groupNameToDelete').textContent = groupName;
+            document.getElementById('studentsCountToDelete').textContent = studentsCount;
+            document.getElementById('deleteGroupForm').action = '/studentGroup/' + groupId;
+        });
+    });
+</script>
 </body>
 </html>

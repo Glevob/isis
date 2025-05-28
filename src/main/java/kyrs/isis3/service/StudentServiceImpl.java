@@ -73,4 +73,27 @@ public class StudentServiceImpl implements StudentService{
     }
 
 
+    ///////////
+    @Override
+    public List<Student> filterStudents(Long groupId, Long methodId) {
+        if (groupId != null && methodId != null) {
+            return studentRepository.findByStudentGroupIdStudentGroupAndStudentGroupTeachingMethodIdTeachingMethod(
+                    groupId, methodId);
+        } else if (groupId != null) {
+            return studentRepository.findByStudentGroupIdStudentGroup(groupId);
+        } else if (methodId != null) {
+            return studentRepository.findByStudentGroupTeachingMethodIdTeachingMethod(methodId);
+        }
+        return studentRepository.findAll();
+    }
+
+    @Override
+    public List<StudentGroup> getAllGroups() {
+        return studentGroupRepository.findAll();
+    }
+
+    @Override
+    public List<TeachingMethod> getAllMethods() {
+        return teachingMethodRepository.findAll();
+    }
 }

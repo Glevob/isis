@@ -1,6 +1,8 @@
 package kyrs.isis3.service;
 
 import kyrs.isis3.model.Student;
+import kyrs.isis3.model.StudentGroup;
+import kyrs.isis3.model.TeachingMethod;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,4 +18,7 @@ public interface StudentService {
 
     void deleteStudentById(Long id);
     List<Student> getStudentsByGroupId(Long groupId);
+    List<Student> filterStudents(Long groupId, Long methodId);
+    List<StudentGroup> getAllGroups();
+    List<TeachingMethod> getAllMethods();
 }

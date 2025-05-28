@@ -9,7 +9,7 @@ import java.time.LocalDate;
 
 @Getter
 @Setter
-@Entity(name="grade")
+@Entity(name="Grade")
 @Table(name="grade")
 @ToString
 public class Grade {
