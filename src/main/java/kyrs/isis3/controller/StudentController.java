@@ -1,12 +1,14 @@
 package kyrs.isis3.controller;
 
 import jakarta.transaction.Transactional;
+import kyrs.isis3.model.Grade;
 import kyrs.isis3.model.Student;
 import kyrs.isis3.model.StudentGroup;
 import kyrs.isis3.model.TeachingMethod;
 import kyrs.isis3.repository.StudentGroupRepository;
 import kyrs.isis3.repository.StudentRepository;
 import kyrs.isis3.repository.TeachingMethodRepository;
+import kyrs.isis3.service.GradeService;
 import kyrs.isis3.service.StudentGroupService;
 import kyrs.isis3.service.StudentService;
 import kyrs.isis3.service.TeachingMethodService;
@@ -32,6 +34,8 @@ public class StudentController {
     private StudentGroupService studentGroupService;
     @Autowired
     private TeachingMethodService teachingMethodService;
+    @Autowired
+    private GradeService gradeService;
 
     @GetMapping("/student")
     public String studentMain(Model model) {
@@ -181,8 +185,53 @@ public class StudentController {
 
 
 
+    ///////////////////////////////////////////////////////////////
+    @GetMapping("/student/{studentId}/grades")
+    public String showStudentGrades(@PathVariable Long studentId, Model model) {
+        Optional<Student> studentOptional = studentRepository.findById(studentId);
+        if (studentOptional.isEmpty()) {
+            return "redirect:/student";
+        }
+        Student student = studentOptional.get();
+        model.addAttribute("student", student);
+        model.addAttribute("grades", gradeService.getGradesByStudent(Optional.of(student)));
+        return "student-grades";
+    }
 
+    @GetMapping("/student/{studentId}/grades/add")
+    public String showAddGradeForm(@PathVariable Long studentId, Model model) {
+        Optional<Student> studentOptional = studentRepository.findById(studentId);
+        if (studentOptional.isEmpty()) {
+            return "redirect:/student";
+        }
+        Student student = studentOptional.get();
+        model.addAttribute("student", student);
+        model.addAttribute("grade", new Grade());
+        return "grade-add";
+    }
 
+    @PostMapping("/student/{studentId}/grades/add")
+    public String addGrade(@PathVariable Long studentId,
+                           @ModelAttribute Grade grade) {
+        Optional<Student> studentOptional = studentRepository.findById(studentId);
+        if (studentOptional.isPresent()) {
+            Student student = studentOptional.get();
+            grade.setStudent(student);
+            gradeService.saveGrade(grade);
+        }
+        return "redirect:/student/" + studentId + "/grades";
+    }
+
+    @GetMapping("/studentGroup/{studentGroupId}/grades")
+    public String showGroupGrades(@PathVariable Long studentGroupId, Model model) {
+        StudentGroup studentGroup = studentGroupService.getStudentGroupById(studentGroupId).orElse(null);
+        if (studentGroup == null) {
+            return "redirect:/studentGroup";
+        }
+        model.addAttribute("studentGroup", studentGroup);
+        model.addAttribute("grades", gradeService.getGradesByGroupId(studentGroupId));
+        return "group-grades";
+    }
 
 
 

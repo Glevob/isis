@@ -14,7 +14,11 @@
         <h1>
             <span th:text="'Студенты группы: ' + ${studentGroup.nameGroup} + '. Метод обучения: ' + ${studentGroup.teachingMethod.nameMethod}"></span>
         </h1>
-        <a th:href="@{/student/add}" class="btn btn-primary">Добавить студента</a>
+        <div>
+            <a th:href="@{'/studentGroup/' + ${studentGroup.idStudentGroup} + '/grades'}"
+               class="btn btn-primary me-2">Оценки группы</a>
+            <a th:href="@{/student/add}" class="btn btn-primary">Добавить студента</a>
+        </div>
     </div>
 
     <!-- Список студентов -->
@@ -28,7 +32,7 @@
                 <div>
                     <a th:href="@{'/student/' + ${student.idStudent}}"
                        class="btn btn-sm btn-outline-primary me-2">Подробнее</a>
-                    <a th:href="@{/students/{studentId}/grades(studentId=${student.idStudent})}"
+                    <a th:href="@{/student/{studentId}/grades(studentId=${student.idStudent})}"
                        class="btn btn-sm btn-outline-secondary">Оценки</a>
                 </div>
             </div>

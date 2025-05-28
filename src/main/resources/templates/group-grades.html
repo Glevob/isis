@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Оценки группы</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:insert="~{blocks/header :: header}"></div>
+
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+      <span th:text="'Оценки группы: ' + ${studentGroup.nameGroup}"></span>
+    </h1>
+    <a th:href="@{'/studentGroup/' + ${studentGroup.idStudentGroup} + '/students'}"
+       class="btn btn-secondary">Назад к группе</a>
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th>Студент</th>
+      <th>Дата</th>
+      <th>Тест</th>
+      <th>Оценка</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="grade : ${grades}">
+      <td th:text="${grade.student.fullName}"></td>
+      <td th:text="${#temporals.format(grade.testDate, 'dd.MM.yyyy')}"></td>
+      <td th:text="${grade.testName}"></td>
+      <td th:text="${grade.valueScore}"></td>
+    </tr>
+    </tbody>
+  </table>
+</div>
+
+<div th:insert="~{blocks/footer :: footer}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

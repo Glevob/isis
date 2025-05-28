@@ -1,5 +1,6 @@
 package kyrs.isis3.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -27,6 +28,10 @@ public class Student {
     @ManyToOne
     @JoinColumn(name="id_student_group")
     private StudentGroup studentGroup;
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "student")
+    private List<Grade> grades;
 
 
     public Student(String fullName, StudentGroup studentGroup) {
