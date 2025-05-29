@@ -34,6 +34,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.liquibase:liquibase-core'
+
+	// Статистический анализ
+	implementation 'org.apache.commons:commons-math3:3.6.1'  // ANOVA и другие статистические тесты
+	// Визуализация данных
+	implementation 'org.knowm.xchart:xchart:3.8.0'  // Генерация графиков и диаграмм
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.h2database:h2'

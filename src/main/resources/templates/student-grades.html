@@ -20,7 +20,7 @@
             <small class="text-muted d-block mt-1" th:text="'Группа: ' + ${student.studentGroup.nameGroup}"></small>
         </h1>
         <div>
-            <a th:href="@{/students/{studentId}/grades/add(studentId=${student.idStudent})}"
+            <a th:href="@{/student/{studentId}/grades/add(studentId=${student.idStudent})}"
                class="btn btn-primary me-2">Добавить оценку</a>
             <a th:href="@{'/studentGroup/' + ${student.studentGroup.idStudentGroup} + '/students'}"
                class="btn btn-secondary">Назад к группе</a>

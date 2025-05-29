@@ -8,6 +8,7 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long>, PagingAndSortingRepository<StudentGroup, Long> {
     List<StudentGroup> findByTeachingMethodIdTeachingMethod(Long idTeachingMethod);
@@ -15,4 +16,6 @@ public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long
     @Modifying
     @Query("DELETE FROM Student s WHERE s.studentGroup.idStudentGroup = :studentGroupId")
     void deleteStudentsByGroupId(@Param("studentGroupId") Long studentGroupId);
+
+    
 }

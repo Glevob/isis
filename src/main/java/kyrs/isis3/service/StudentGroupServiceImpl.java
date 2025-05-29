@@ -80,4 +80,5 @@ public class StudentGroupServiceImpl implements StudentGroupService{
         // Удаляем саму группу
         studentGroupRepository.deleteById(groupId);
     }
+
 }

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>ANOVA анализ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .significance {
+            font-weight: bold;
+            color: #dc3545;
+        }
+        .table-container {
+            margin-top: 30px;
+        }
+        .chart-container {
+            margin: 40px 0;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{blocks/header :: header}"></div>
+
+<div class="container py-4">
+    <h1>Результаты дисперсионного анализа (ANOVA)</h1>
+
+    <div class="alert alert-info">
+        <h4>Основные результаты:</h4>
+        <p>F-значение: <span th:text="${anovaResult.fValue}"></span></p>
+        <p>p-значение:
+            <span th:text="${anovaResult.pValue}"
+                  th:class="${anovaResult.significant} ? 'significance' : ''"></span>
+            <span th:if="${anovaResult.significant}" class="significance">(значимо)</span>
+            <span th:unless="${anovaResult.significant}">(не значимо)</span>
+        </p>
+    </div>
+
+    <div class="chart-container">
+        <h3>Визуализация средних оценок</h3>
+        <img th:src="'data:image/png;base64,' + ${chartImage}"
+             alt="ANOVA Chart" class="img-fluid">
+    </div>
+
+    <div class="table-container">
+        <h3>Post-hoc сравнения (Tukey HSD)</h3>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Группа 1</th>
+                <th>Группа 2</th>
+                <th>Разница средних</th>
+                <th>p-значение</th>
+                <th>Значимость</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="comparison : ${anovaResult.groupComparisons}">
+                <td th:text="${comparison.group1}"></td>
+                <td th:text="${comparison.group2}"></td>
+                <td th:text="${comparison.meanDifference}"></td>
+                <td th:text="${comparison.pValue}"></td>
+                <td th:class="${comparison.significant} ? 'significance' : ''"
+                    th:text="${comparison.significant} ? 'Да' : 'Нет'"></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="mt-4">
+        <a href="/studentGroup" class="btn btn-secondary">Назад к списку групп</a>
+    </div>
+</div>
+
+<div th:insert="~{blocks/footer :: footer}"></div>
+</body>
+</html>
