@@ -40,6 +40,7 @@ dependencies {
 	// Визуализация данных
 	implementation 'org.knowm.xchart:xchart:3.8.0'  // Генерация графиков и диаграмм
 
+
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.h2database:h2'

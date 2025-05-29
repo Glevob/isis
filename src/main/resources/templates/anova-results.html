@@ -35,8 +35,42 @@
         </p>
     </div>
 
+<!--    <div class="chart-container">-->
+<!--        <h3>Визуализация средних оценок</h3>-->
+<!--        <img th:src="'data:image/png;base64,' + ${chartImage}"-->
+<!--             alt="ANOVA Chart" class="img-fluid">-->
+<!--    </div>-->
+
+<!--    <div class="table-container">-->
+<!--        <h3>Post-hoc сравнения (Tukey HSD)</h3>-->
+<!--        <table class="table table-striped">-->
+<!--            <thead>-->
+<!--            <tr>-->
+<!--                <th>Группа 1</th>-->
+<!--                <th>Группа 2</th>-->
+<!--                <th>Разница средних</th>-->
+<!--                <th>p-значение</th>-->
+<!--                <th>Значимость</th>-->
+<!--            </tr>-->
+<!--            </thead>-->
+<!--            <tbody>-->
+<!--            <tr th:each="comparison : ${anovaResult.groupComparisons}">-->
+<!--                <td th:text="${comparison.group1}"></td>-->
+<!--                <td th:text="${comparison.group2}"></td>-->
+<!--                <td th:text="${comparison.meanDifference}"></td>-->
+<!--                <td th:text="${comparison.pValue}"></td>-->
+<!--                <td th:class="${comparison.significant} ? 'significance' : ''"-->
+<!--                    th:text="${comparison.significant} ? 'Да' : 'Нет'"></td>-->
+<!--            </tr>-->
+<!--            </tbody>-->
+<!--        </table>-->
+<!--    </div>-->
+
+
+
+
     <div class="chart-container">
-        <h3>Визуализация средних оценок</h3>
+        <h3>Сравнение методов обучения</h3>
         <img th:src="'data:image/png;base64,' + ${chartImage}"
              alt="ANOVA Chart" class="img-fluid">
     </div>
@@ -46,8 +80,8 @@
         <table class="table table-striped">
             <thead>
             <tr>
-                <th>Группа 1</th>
-                <th>Группа 2</th>
+                <th>Метод обучения 1</th>
+                <th>Метод обучения 2</th>
                 <th>Разница средних</th>
                 <th>p-значение</th>
                 <th>Значимость</th>
@@ -55,8 +89,8 @@
             </thead>
             <tbody>
             <tr th:each="comparison : ${anovaResult.groupComparisons}">
-                <td th:text="${comparison.group1}"></td>
-                <td th:text="${comparison.group2}"></td>
+                <td th:text="${comparison.group1.split(' - ')[1]}"></td>
+                <td th:text="${comparison.group2.split(' - ')[1]}"></td>
                 <td th:text="${comparison.meanDifference}"></td>
                 <td th:text="${comparison.pValue}"></td>
                 <td th:class="${comparison.significant} ? 'significance' : ''"
@@ -65,7 +99,6 @@
             </tbody>
         </table>
     </div>
-
     <div class="mt-4">
         <a href="/studentGroup" class="btn btn-secondary">Назад к списку групп</a>
     </div>
