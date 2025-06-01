@@ -42,12 +42,6 @@
         <p><strong>Нулевая гипотеза (H0):</strong> Все методы обучения одинаково эффективны (μ₁ = μ₂ = μ₃)</p>
         <p><strong>Альтернативная гипотеза (H1):</strong> Хотя бы один метод обучения отличается по эффективности</p>
     </div>
-<!--    <h6>Постановка нулевой гипотезы:</h6>-->
-<!--    <a>H0 указывает на отсутствие различий между группами, иными словами все группы по методам-->
-<!--        обучения относятся к одной генеральной совокупности и соответственно средние равны друг другу H0:u1=u2=u3-->
-<!--    </a> </br>-->
-<!--    <a>Альтернаятивная гипотеза выдвигает предположение, что успеваемость студентов зависит от метода обучения-->
-<!--    и средние в этих группах на самом деле не равны H1: u1!=u2!=u3</a>-->
     <div class="alert alert-info">
         <h4>Основные результаты:</h4>
         <p>F-значение: <span th:text="${anovaResult.fValue}"></span></p>
@@ -96,40 +90,6 @@
         </tr>
         </tbody>
     </table>
-
-<!--    <div class="chart-container">-->
-<!--        <h3>Визуализация средних оценок</h3>-->
-<!--        <img th:src="'data:image/png;base64,' + ${chartImage}"-->
-<!--             alt="ANOVA Chart" class="img-fluid">-->
-<!--    </div>-->
-
-<!--    <div class="table-container">-->
-<!--        <h3>Post-hoc сравнения (Tukey HSD)</h3>-->
-<!--        <table class="table table-striped">-->
-<!--            <thead>-->
-<!--            <tr>-->
-<!--                <th>Группа 1</th>-->
-<!--                <th>Группа 2</th>-->
-<!--                <th>Разница средних</th>-->
-<!--                <th>p-значение</th>-->
-<!--                <th>Значимость</th>-->
-<!--            </tr>-->
-<!--            </thead>-->
-<!--            <tbody>-->
-<!--            <tr th:each="comparison : ${anovaResult.groupComparisons}">-->
-<!--                <td th:text="${comparison.group1}"></td>-->
-<!--                <td th:text="${comparison.group2}"></td>-->
-<!--                <td th:text="${comparison.meanDifference}"></td>-->
-<!--                <td th:text="${comparison.pValue}"></td>-->
-<!--                <td th:class="${comparison.significant} ? 'significance' : ''"-->
-<!--                    th:text="${comparison.significant} ? 'Да' : 'Нет'"></td>-->
-<!--            </tr>-->
-<!--            </tbody>-->
-<!--        </table>-->
-<!--    </div>-->
-
-
-
 
     <div class="chart-container">
         <h3>Сравнение методов обучения</h3>
