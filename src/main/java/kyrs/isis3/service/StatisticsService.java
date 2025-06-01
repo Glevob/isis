@@ -155,25 +155,41 @@ public class StatisticsService {
         // Вычисляем необходимые параметры для теста Тьюки
         double mse = calculateMSE(samples); // Средний квадрат ошибок внутри групп
         int df = calculateDegreesOfFreedom(samples); // Степени свободы
+        int k = samples.size(); // Количество групп
 
         List<GroupComparisonDto> comparisons = new ArrayList<>();
-        double qCritical = getQCriticalValue(samples.size(), df); // Критическое значение q
+        double qCritical = getQCriticalValue(k, df); // Критическое значение q
 
         // Генерируем все возможные пары для сравнения
-        for (int i = 0; i < samples.size(); i++) {
-            for (int j = i + 1; j < samples.size(); j++) {
+        for (int i = 0; i < k; i++) {
+            for (int j = i + 1; j < k; j++) {
                 double mean1 = calculateMean(samples.get(i));
                 double mean2 = calculateMean(samples.get(j));
 
-                // Гарантируем положительную разницу (всегда вычитаем меньшее из большего)
+                // Вычисляем разницу (всегда положительную)
                 double diff = Math.abs(mean1 - mean2);
                 String firstGroup = mean1 > mean2 ? groupNames.get(i) : groupNames.get(j);
                 String secondGroup = mean1 > mean2 ? groupNames.get(j) : groupNames.get(i);
 
+                // Вычисляем стандартную ошибку разницы
                 double se = Math.sqrt(mse * (1.0/samples.get(i).size() + 1.0/samples.get(j).size()));
-                double criticalValue = qCritical * se;
-                boolean significant = diff > criticalValue;
-                double pValue = significant ? 0.01 : 0.05; // Упрощенное p-значение
+
+                // Вычисляем критическое значение (HSD)
+                double hsd = qCritical * se;
+
+                // Определяем значимость
+                boolean significant = diff > hsd;
+
+                // Упрощенное вычисление p-value
+                double pValue;
+                if (significant) {
+                    pValue = 0.001; // Значимое различие
+                } else {
+                    // Аппроксимация p-value на основе расстояния до критического значения
+                    double ratio = diff / hsd;
+                    pValue = 1.0 - ratio * 0.8; // Эвристическая формула
+                    if (pValue < 0.05) pValue = 0.05;
+                }
 
                 comparisons.add(new GroupComparisonDto(
                         firstGroup,
@@ -181,7 +197,7 @@ public class StatisticsService {
                         diff,
                         pValue,
                         significant,
-                        criticalValue
+                        hsd // Критическое значение HSD
                 ));
             }
         }
@@ -209,13 +225,47 @@ public class StatisticsService {
         return totalSize - samples.size(); // df_within = N - k
     }
     private double getQCriticalValue(int k, int df) {
-        // Упрощенная реализация - в реальном проекте используйте таблицы Тьюки или точные вычисления
-        if (k == 3) {
-            if (df >= 20) return 3.58;
-            if (df >= 10) return 3.88;
-            return 4.34;
+        // Таблица критических значений q Тьюки для α=0.05
+        // k - число групп, df - степени свободы внутри групп
+        Map<Integer, Map<Integer, Double>> qTable = new HashMap<>();
+
+        // Заполняем таблицу значений
+        Map<Integer, Double> df2 = new HashMap<>();
+        df2.put(10, 3.88); df2.put(12, 3.77); df2.put(14, 3.70);
+        df2.put(16, 3.65); df2.put(18, 3.61); df2.put(20, 3.58);
+        df2.put(24, 3.53); df2.put(30, 3.49); df2.put(40, 3.44);
+        df2.put(60, 3.40); df2.put(120, 3.36); df2.put(Integer.MAX_VALUE, 3.31);
+        qTable.put(2, df2);
+
+        Map<Integer, Double> df3 = new HashMap<>();
+        df3.put(10, 4.34); df3.put(12, 4.17); df3.put(14, 4.05);
+        df3.put(16, 3.96); df3.put(18, 3.89); df3.put(20, 3.84);
+        df3.put(24, 3.76); df3.put(30, 3.69); df3.put(40, 3.61);
+        df3.put(60, 3.54); df3.put(120, 3.47); df3.put(Integer.MAX_VALUE, 3.40);
+        qTable.put(3, df3);
+
+        Map<Integer, Double> df4 = new HashMap<>();
+        df4.put(10, 4.68); df4.put(12, 4.47); df4.put(14, 4.32);
+        df4.put(16, 4.20); df4.put(18, 4.11); df4.put(20, 4.04);
+        df4.put(24, 3.94); df4.put(30, 3.85); df4.put(40, 3.74);
+        df4.put(60, 3.65); df4.put(120, 3.56); df4.put(Integer.MAX_VALUE, 3.47);
+        qTable.put(4, df4);
+
+        // Добавить больше значений если будет надо
+
+        // Получаем значения для заданного числа групп
+        Map<Integer, Double> groupValues = qTable.get(k);
+        if (groupValues == null) {
+            // Линейная интерполяция для k > 4 (приблизительно)
+            return 3.31 + (0.4 / Math.sqrt(k));
         }
-        return 3.0; // Значение по умолчанию
+
+        // Находим ближайшее значение df
+        int closestDf = groupValues.keySet().stream()
+                .min(Comparator.comparingInt(d -> Math.abs(d - df)))
+                .orElse(Integer.MAX_VALUE);
+
+        return groupValues.get(closestDf);
     }
 
 
@@ -231,54 +281,114 @@ public class StatisticsService {
         return values.stream().mapToDouble(Double::doubleValue).average().orElse(0);
     }
 
+//    public byte[] generateAnovaChart(AnovaResultDto result) throws IOException {
+////
+////        // Получаем упорядоченные сравнения
+////        List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
+////                .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
+////                .collect(Collectors.toList());
+////
+////        // Подготавливаем данные для графика
+////        List<String> comparisonLabels = Arrays.asList("1-2", "1-3", "2-3");
+////        List<Double> differences = comparisons.stream()
+////                .map(GroupComparisonDto::getMeanDifference)
+////                .collect(Collectors.toList());
+////        List<Double> criticalValues = comparisons.stream()
+////                .map(GroupComparisonDto::getCriticalValue)
+////                .collect(Collectors.toList());
+////
+////        // Создаем график
+////        CategoryChart chart = new CategoryChartBuilder()
+////                .width(800)
+////                .height(600)
+////                .title("Сравнение методов обучения (Tukey HSD)")
+////                .xAxisTitle("Парные сравнения")
+////                .yAxisTitle("Разница средних")
+////                .build();
+//
+////        // Получаем упорядоченные сравнения
+////        List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
+////                .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
+////                .collect(Collectors.toList());
+////
+////        // Подготавливаем данные для графика
+////        List<String> comparisonLabels = Arrays.asList("1-2", "1-3", "2-3");
+////        List<Double> differences = comparisons.stream()
+////                .map(GroupComparisonDto::getMeanDifference)
+////                .collect(Collectors.toList());
+////        List<Double> criticalValues = comparisons.stream()
+////                .map(GroupComparisonDto::getCriticalValue)
+////                .collect(Collectors.toList());
+////
+////        // Создаем график
+////        CategoryChart chart = new CategoryChartBuilder()
+////                .width(800)
+////                .height(600)
+////                .title("Сравнение методов обучения (Tukey HSD)")
+////                .xAxisTitle("Парные сравнения")
+////                .yAxisTitle("Разница средних")
+////                .build();
+//
+//        // Получаем упорядоченные сравнения
+//        List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
+//                .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
+//                .collect(Collectors.toList());
+//
+//        // Подготавливаем данные для графика
+//        List<String> comparisonLabels = comparisons.stream()
+//                .map(comp -> comp.getGroup1() + "-" + comp.getGroup2())
+//                .collect(Collectors.toList());
+//
+//        List<Double> differences = comparisons.stream()
+//                .map(GroupComparisonDto::getMeanDifference)
+//                .collect(Collectors.toList());
+//
+//        List<Double> criticalValues = comparisons.stream()
+//                .map(GroupComparisonDto::getCriticalValue)
+//                .collect(Collectors.toList());
+//
+//        // Создаем график
+//        CategoryChart chart = new CategoryChartBuilder()
+//                .width(800)
+//                .height(600)
+//                .title("Сравнение методов обучения (Tukey HSD)")
+//                .xAxisTitle("Парные сравнения")
+//                .yAxisTitle("Разница средних")
+//                .build();
+//
+//        // Настраиваем стиль графика
+//        chart.getStyler()
+//                .setDefaultSeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar)
+//                .setPlotGridVerticalLinesVisible(false)
+//                .setLegendPosition(Styler.LegendPosition.InsideNE);
+//
+//        // Добавляем столбцы с разницами
+//        chart.addSeries("Difference", comparisonLabels, differences);
+//
+//        // Добавляем линии критических значений
+//        chart.addSeries("Critical value", comparisonLabels, criticalValues)
+//                .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Line);
+//
+//        // Добавляем горизонтальную линию для нуля
+//        chart.addSeries("Zero line",
+//                        Arrays.asList("1-2", "2-3"),
+//                        Arrays.asList(0.0, 0.0))
+//                .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Line);
+//
+//        // Настраиваем цвета
+//        chart.getStyler().setSeriesColors(new Color[]{
+//                new Color(70, 130, 180),  // Difference - steel blue
+//                new Color(220, 20, 60),    // Critical value - crimson
+//                new Color(0, 0, 0)         // Zero line - black
+//        });
+//
+//        // Сохраняем график в изображение
+//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+//        BitmapEncoder.saveBitmap(chart, outputStream, BitmapEncoder.BitmapFormat.PNG);
+//        return outputStream.toByteArray();
+//    }
+
     public byte[] generateAnovaChart(AnovaResultDto result) throws IOException {
-//
-//        // Получаем упорядоченные сравнения
-//        List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
-//                .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
-//                .collect(Collectors.toList());
-//
-//        // Подготавливаем данные для графика
-//        List<String> comparisonLabels = Arrays.asList("1-2", "1-3", "2-3");
-//        List<Double> differences = comparisons.stream()
-//                .map(GroupComparisonDto::getMeanDifference)
-//                .collect(Collectors.toList());
-//        List<Double> criticalValues = comparisons.stream()
-//                .map(GroupComparisonDto::getCriticalValue)
-//                .collect(Collectors.toList());
-//
-//        // Создаем график
-//        CategoryChart chart = new CategoryChartBuilder()
-//                .width(800)
-//                .height(600)
-//                .title("Сравнение методов обучения (Tukey HSD)")
-//                .xAxisTitle("Парные сравнения")
-//                .yAxisTitle("Разница средних")
-//                .build();
-
-//        // Получаем упорядоченные сравнения
-//        List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
-//                .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
-//                .collect(Collectors.toList());
-//
-//        // Подготавливаем данные для графика
-//        List<String> comparisonLabels = Arrays.asList("1-2", "1-3", "2-3");
-//        List<Double> differences = comparisons.stream()
-//                .map(GroupComparisonDto::getMeanDifference)
-//                .collect(Collectors.toList());
-//        List<Double> criticalValues = comparisons.stream()
-//                .map(GroupComparisonDto::getCriticalValue)
-//                .collect(Collectors.toList());
-//
-//        // Создаем график
-//        CategoryChart chart = new CategoryChartBuilder()
-//                .width(800)
-//                .height(600)
-//                .title("Сравнение методов обучения (Tukey HSD)")
-//                .xAxisTitle("Парные сравнения")
-//                .yAxisTitle("Разница средних")
-//                .build();
-
         // Получаем упорядоченные сравнения
         List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
                 .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
@@ -306,31 +416,35 @@ public class StatisticsService {
                 .yAxisTitle("Разница средних")
                 .build();
 
-        // Настраиваем стиль графика
-        chart.getStyler()
-                .setDefaultSeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar)
-                .setPlotGridVerticalLinesVisible(false)
-                .setLegendPosition(Styler.LegendPosition.InsideNE);
+//        // Настраиваем стиль графика
+//        chart.getStyler()
+//                .setDefaultSeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar)
+//                .setPlotGridVerticalLinesVisible(false)
+//                .setLegendPosition(Styler.LegendPosition.InsideNE)
+//                .setOverlapped(true); // Разрешаем перекрытие столбцов
 
-        // Добавляем столбцы с разницами
-        chart.addSeries("Difference", comparisonLabels, differences);
-
-        // Добавляем линии критических значений
+        // Добавляем столбцы с критическими значениями (фоном)
         chart.addSeries("Critical value", comparisonLabels, criticalValues)
-                .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Line);
+                .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar);
+
+        // Добавляем столбцы с разницами (передним планом)
+        chart.addSeries("Difference", comparisonLabels, differences)
+                .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar);
+
+        // Настраиваем цвета и прозрачность
+        chart.getStyler().setSeriesColors(new Color[]{
+                new Color(220, 20, 60, 100),  // Critical value - crimson с прозрачностью
+                new Color(70, 130, 180)       // Difference - steel blue
+        });
+
+//        // Настраиваем ширину столбцов
+//        chart.getStyler().setBarWidth(0.4);
 
         // Добавляем горизонтальную линию для нуля
         chart.addSeries("Zero line",
-                        Arrays.asList("1-2", "2-3"),
+                        Arrays.asList(comparisonLabels.get(0), comparisonLabels.get(comparisonLabels.size()-1)),
                         Arrays.asList(0.0, 0.0))
                 .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Line);
-
-        // Настраиваем цвета
-        chart.getStyler().setSeriesColors(new Color[]{
-                new Color(70, 130, 180),  // Difference - steel blue
-                new Color(220, 20, 60),    // Critical value - crimson
-                new Color(0, 0, 0)         // Zero line - black
-        });
 
         // Сохраняем график в изображение
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

@@ -68,13 +68,44 @@
         </p>
     </div>
 
+
+
+    <table>
+        <thead>
+        <tr>
+            <th colspan="3">Сводка данных</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>Методы обучения</strong></td>
+            <td><strong>N</strong></td>
+            <td><strong>Среднее</strong></td>
+<!--            <td><strong>Std. Dev.</strong></td>-->
+<!--            <td><strong>Std. Error</strong></td>-->
+        </tr>
+        <tr th:each="method, stat : ${methodStats}">
+            <td th:text="${method.key}"></td>
+            <td th:text="${method.value.count}"></td>
+            <td th:text="${#numbers.formatDecimal(method.value.mean, 1, 2)}"></td>
+<!--            <td th:text="${#numbers.formatDecimal(method.value.stdDev, 1, 2)}"></td>-->
+<!--            <td th:text="${#numbers.formatDecimal(method.value.stdError, 1, 4)}"></td>-->
+        </tr>
+        <tr class="overall-mean">
+            <td><strong>Общая средняя</strong></td>
+            <td th:text="${totalCount}"></td>
+            <td th:text="${#numbers.formatDecimal(overallMean, 1, 2)}"></td>
+        </tr>
+        </tbody>
+    </table>
+
     <table class="stats-table">
         <thead>
         <tr>
             <th>Источник вариации</th>
             <th>Сумма квадратов (SS)</th>
             <th>Степени свободы (df)</th>
-            <th>Средний квадрат (MS)</th>
+            <th>Дисперсия</th>
             <th>F-статистика</th>
         </tr>
         </thead>
@@ -98,36 +129,6 @@
             <td th:text="${#numbers.formatDecimal(anovaResult.totalSumOfSquares, 1, 2)}"></td>
             <td th:text="${anovaResult.totalDf}"></td>
             <td>-</td>
-            <td>-</td>
-        </tr>
-        </tbody>
-    </table>
-
-    <table>
-        <thead>
-        <tr>
-            <th colspan="5">Сводка данных</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td><strong>Методы обучения</strong></td>
-            <td><strong>N</strong></td>
-            <td><strong>Среднее</strong></td>
-<!--            <td><strong>Std. Dev.</strong></td>-->
-<!--            <td><strong>Std. Error</strong></td>-->
-        </tr>
-        <tr th:each="method, stat : ${methodStats}">
-            <td th:text="${method.key}"></td>
-            <td th:text="${method.value.count}"></td>
-            <td th:text="${#numbers.formatDecimal(method.value.mean, 1, 2)}"></td>
-<!--            <td th:text="${#numbers.formatDecimal(method.value.stdDev, 1, 2)}"></td>-->
-<!--            <td th:text="${#numbers.formatDecimal(method.value.stdError, 1, 4)}"></td>-->
-        </tr>
-        <tr class="overall-mean">
-            <td><strong>Общая средняя</strong></td>
-            <td th:text="${totalCount}"></td>
-            <td th:text="${#numbers.formatDecimal(overallMean, 1, 2)}"></td>
             <td>-</td>
         </tr>
         </tbody>
