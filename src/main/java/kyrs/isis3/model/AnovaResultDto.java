@@ -21,7 +21,6 @@ public class AnovaResultDto {
     }
 
     public AnovaResultDto() {}
-    // getters, setters, constructor
 }
 
 

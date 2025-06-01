@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <title>ANOVA анализ</title>
@@ -16,6 +16,19 @@
         .chart-container {
             margin: 40px 0;
         }
+        table {
+            border-collapse: collapse;
+            width: 50%;
+            margin: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
     </style>
 </head>
 <body>
@@ -23,7 +36,18 @@
 
 <div class="container py-4">
     <h1>Результаты дисперсионного анализа (ANOVA)</h1>
-
+    <h5>Влияет ли метод обучения на успеваемость студентов?</h5>
+    <div class="alert alert-primary mt-4">
+        <h4>Гипотезы:</h4>
+        <p><strong>Нулевая гипотеза (H0):</strong> Все методы обучения одинаково эффективны (μ₁ = μ₂ = μ₃)</p>
+        <p><strong>Альтернативная гипотеза (H1):</strong> Хотя бы один метод обучения отличается по эффективности</p>
+    </div>
+<!--    <h6>Постановка нулевой гипотезы:</h6>-->
+<!--    <a>H0 указывает на отсутствие различий между группами, иными словами все группы по методам-->
+<!--        обучения относятся к одной генеральной совокупности и соответственно средние равны друг другу H0:u1=u2=u3-->
+<!--    </a> </br>-->
+<!--    <a>Альтернаятивная гипотеза выдвигает предположение, что успеваемость студентов зависит от метода обучения-->
+<!--    и средние в этих группах на самом деле не равны H1: u1!=u2!=u3</a>-->
     <div class="alert alert-info">
         <h4>Основные результаты:</h4>
         <p>F-значение: <span th:text="${anovaResult.fValue}"></span></p>
@@ -34,6 +58,44 @@
             <span th:unless="${anovaResult.significant}">(не значимо)</span>
         </p>
     </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th colspan="5">Сводка данных</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>Методы обучения</strong></td>
+            <td><strong>N</strong></td>
+            <td><strong>Mean</strong></td>
+            <td><strong>Std. Dev.</strong></td>
+            <td><strong>Std. Error</strong></td>
+        </tr>
+        <tr>
+            <td>Group 1</td>
+            <td>3</td>
+            <td>2</td>
+            <td>1</td>
+            <td>0.5774</td>
+        </tr>
+        <tr>
+            <td>Group 2</td>
+            <td>3</td>
+            <td>4</td>
+            <td>1</td>
+            <td>0.5774</td>
+        </tr>
+        <tr>
+            <td>Group 3</td>
+            <td>3</td>
+            <td>6</td>
+            <td>1</td>
+            <td>0.5774</td>
+        </tr>
+        </tbody>
+    </table>
 
 <!--    <div class="chart-container">-->
 <!--        <h3>Визуализация средних оценок</h3>-->
