@@ -27,9 +27,11 @@ public class StatisticsService {
     private final TeachingMethodRepository teachingMethodRepository;
 
     public AnovaResultDto performAnovaAnalysis() {
+        // Получаем данные и сортируем методы по имени
         Map<TeachingMethod, List<Double>> methodsWithGrades = getTeachingMethodsWithGrades();
         List<String> methodNames = methodsWithGrades.keySet().stream()
                 .map(TeachingMethod::getNameMethod)
+                .sorted()
                 .collect(Collectors.toList());
 
         // Вычисление общей средней
@@ -76,10 +78,12 @@ public class StatisticsService {
         // Вычисление p-value
         double pValue = 1 - new FDistribution(betweenGroupDf, withinGroupDf).cumulativeProbability(fValue);
 
-        // Post-hoc анализ
+        // Post-hoc анализ с передачей всех необходимых параметров
         List<GroupComparisonDto> comparisons = performTukeyHSD(
                 new ArrayList<>(methodsWithGrades.values()),
-                methodNames);
+                methodNames,
+                withinGroupMeanSquare,
+                withinGroupDf);
 
         return new AnovaResultDto(
                 fValue, pValue, pValue < 0.05,
@@ -146,24 +150,40 @@ public class StatisticsService {
         return result;
     }
 
-    private List<GroupComparisonDto> performTukeyHSD(List<List<Double>> samples, List<String> methodNames) {
+    private List<GroupComparisonDto> performTukeyHSD(List<List<Double>> samples,
+                                                     List<String> groupNames,
+                                                     double mse,
+                                                     int df) {
         List<GroupComparisonDto> comparisons = new ArrayList<>();
 
-        for (int i = 0; i < samples.size(); i++) {
-            for (int j = i + 1; j < samples.size(); j++) {
+        // Упрощенное критическое значение для Tukey HSD
+        // В реальном приложении используйте библиотеку или точные расчеты
+        double qCritical = 3.67; // Примерное значение для α=0.05 и 3 групп
+
+        // Гарантируем порядок сравнений: 1-2, 1-3, 2-3
+        int[][] comparisonPairs = {{0, 1}, {0, 2}, {1, 2}};
+
+        for (int[] pair : comparisonPairs) {
+            int i = pair[0];
+            int j = pair[1];
+
+            if (i < samples.size() && j < samples.size()) {
                 double mean1 = calculateMean(samples.get(i));
                 double mean2 = calculateMean(samples.get(j));
                 double diff = mean1 - mean2;
+                double se = Math.sqrt(mse * (1.0/samples.get(i).size() + 1.0/samples.get(j).size()));
+                double criticalValue = qCritical * se;
 
-                // Simplified p-value calculation (replace with actual Tukey HSD implementation)
-                double pValue = Math.abs(diff) > 5 ? 0.01 : 0.05;
+                // Упрощенный расчет p-value
+                double pValue = Math.abs(diff) > criticalValue ? 0.01 : 0.05;
 
                 comparisons.add(new GroupComparisonDto(
-                        methodNames.get(i),  // Just use method name directly
-                        methodNames.get(j),  // Just use method name directly
+                        groupNames.get(i),
+                        groupNames.get(j),
                         diff,
                         pValue,
-                        pValue < 0.05
+                        pValue < 0.05,
+                        criticalValue
                 ));
             }
         }
@@ -176,6 +196,22 @@ public class StatisticsService {
     }
 
     public byte[] generateAnovaChart(AnovaResultDto result) throws IOException {
+        // Убедимся, что сравнения упорядочены как 1-2, 1-3, 2-3
+        List<GroupComparisonDto> orderedComparisons = result.getGroupComparisons().stream()
+                .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
+                .collect(Collectors.toList());
+
+        // Подготовка данных для графика
+        List<String> comparisonLabels = orderedComparisons.stream()
+                .map(comp -> comp.getGroup1() + "-" + comp.getGroup2())
+                .collect(Collectors.toList());
+
+        List<Double> differences = orderedComparisons.stream()
+                .map(GroupComparisonDto::getMeanDifference)
+                .collect(Collectors.toList());
+
+        double criticalValue = orderedComparisons.get(0).getCriticalValue();
+
         // Group comparisons by methods and calculate average differences
         Map<String, Double> methodAverages = result.getGroupComparisons().stream()
                 .collect(Collectors.groupingBy(
