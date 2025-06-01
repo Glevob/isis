@@ -41,18 +41,9 @@ public class StudentController {
     @Autowired
     private GradeService gradeService;
 
-//    @GetMapping("/student")
-//    public String studentMain(Model model) {
-//        Iterable<Student> students = studentRepository.findAll();
-//        model.addAttribute("students", students);
-//        return "student-main";
-//    }
-
-
     @GetMapping("/student/add")
     public String studentAdd(Model model) {
         model.addAttribute("studentGroups", studentGroupRepository.findAll());
-//        model.addAttribute("teachingMethods", teachingMethodRepository.findAll());
         return "student-add";
     }
 
@@ -162,8 +153,6 @@ public class StudentController {
         return "redirect:/student";
     }
 
-
-
     @GetMapping("/studentGroup/{studentGroupId}/students")
     public String showStudentsByGroup(@PathVariable Long studentGroupId, Model model) {
         Optional<StudentGroup> studentGroup = studentGroupService.getStudentGroupById(studentGroupId);
@@ -174,7 +163,6 @@ public class StudentController {
         }
         return "redirect:/studentGroup";
     }
-
 
     @GetMapping("/teachingMethod/{teachingMethodId}/groups")
     public String showGroupsByMethod(@PathVariable Long teachingMethodId, Model model) {
@@ -187,9 +175,6 @@ public class StudentController {
         return "redirect:/teachingMethod";
     }
 
-
-
-    ///////////////////////////////////////////////////////////////
     @GetMapping("/student/{studentId}/grades")
     public String showStudentGrades(@PathVariable Long studentId, Model model) {
         Optional<Student> studentOptional = studentRepository.findById(studentId);
@@ -226,22 +211,6 @@ public class StudentController {
         return "redirect:/student/" + studentId + "/grades";
     }
 
-//    @GetMapping("/studentGroup/{studentGroupId}/grades")
-//    public String showGroupGrades(@PathVariable Long studentGroupId, Model model) {
-//        StudentGroup studentGroup = studentGroupService.getStudentGroupById(studentGroupId).orElse(null);
-//        if (studentGroup == null) {
-//            return "redirect:/studentGroup";
-//        }
-//        model.addAttribute("studentGroup", studentGroup);
-//        model.addAttribute("grades", gradeService.getGradesByGroupId(studentGroupId));
-//        return "group-grades";
-//    }
-
-
-
-
-
-    //////////////////////////////////////
     @GetMapping("/studentGroup/{studentGroupId}/grades")
     public String showGroupGrades(@PathVariable Long studentGroupId, Model model) {
         StudentGroup studentGroup = studentGroupService.getStudentGroupById(studentGroupId).orElse(null);
@@ -271,7 +240,6 @@ public class StudentController {
         return "redirect:/student";
     }
 
-
     @PostMapping("/student/grades/{gradeId}")
     public String deleteGrade(@PathVariable Long gradeId,
                               @RequestParam("studentId") Long studentId) {
@@ -290,15 +258,4 @@ public class StudentController {
         model.addAttribute("selectedMethod", teachingMethodId);
         return "student-main";
     }
-
-
-
-
-
-
-
-
-
-
-
 }

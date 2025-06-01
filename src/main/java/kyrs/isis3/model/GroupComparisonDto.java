@@ -20,4 +20,5 @@ public class GroupComparisonDto {
         this.isSignificant = isSignificant;
     }
     public GroupComparisonDto() {}
+    // getters, setters, constructor
 }

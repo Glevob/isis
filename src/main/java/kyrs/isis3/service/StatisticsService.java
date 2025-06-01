@@ -28,9 +28,6 @@ public class StatisticsService {
     public AnovaResultDto performAnovaAnalysis() {
         // Получаем все группы с их оценками
         Map<StudentGroup, List<Double>> studentGroupsWithGrades = getStudentGroupsWithGrades();
-//
-//        // Получаем данные с указанием методов обучения
-//        Map<StudentGroup, List<Double>> groupsWithGrades = getGroupsWithGrades();
 
         // Формируем названия в формате "Группа - Метод"
         List<String> groupNames = studentGroupsWithGrades.keySet().stream()
@@ -39,7 +36,6 @@ public class StatisticsService {
 
         // Подготовка данных для ANOVA
         List<List<Double>> samples = new ArrayList<>();
-//        List<String> groupNames = new ArrayList<>();
 
         studentGroupsWithGrades.forEach((studentGroup, grades) -> {
             samples.add(grades);
@@ -49,7 +45,6 @@ public class StatisticsService {
         // Выполняем ANOVA
         OneWayAnova anova = new OneWayAnova();
 
-// Конвертируем List<List<Double>> в Collection<double[]>
         Collection<double[]> samplesArray = samples.stream()
                 .map(list -> list.stream().mapToDouble(Double::doubleValue).toArray())
                 .collect(Collectors.toList());
@@ -107,45 +102,6 @@ public class StatisticsService {
     private double calculateMean(List<Double> values) {
         return values.stream().mapToDouble(Double::doubleValue).average().orElse(0);
     }
-
-//    public byte[] generateAnovaChart(AnovaResultDto result) throws IOException {
-//        // Создаем данные для графика
-//        List<String> groups = result.getGroupComparisons().stream()
-//                .map(GroupComparisonDto::getGroup1)
-//                .distinct()
-//                .collect(Collectors.toList());
-//
-//        List<Double> means = new ArrayList<>();
-//        for (String group : groups) {
-//            double mean = result.getGroupComparisons().stream()
-//                    .filter(c -> c.getGroup1().equals(group))
-//                    .findFirst()
-//                    .map(GroupComparisonDto::getMeanDifference)
-//                    .orElse(0.0);
-//            means.add(mean);
-//        }
-//
-//        // Создаем график
-//        CategoryChart chart = new CategoryChartBuilder()
-//                .width(800)
-//                .height(600)
-//                .title("Сравнение средних оценок по группам")
-//                .xAxisTitle("Группы")
-//                .yAxisTitle("Средняя оценка")
-//                .build();
-//
-//        // Вариант 1: Использование списков (предпочтительный способ)
-//        chart.addSeries("Средние оценки", groups, means);
-//
-//        // Или Вариант 2: Использование массивов
-//        // chart.addSeries("Средние оценки",
-//        //         groups.toArray(new String[0]),
-//        //         means.stream().mapToDouble(Double::doubleValue).toArray());
-//
-//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        BitmapEncoder.saveBitmap(chart, outputStream, BitmapEncoder.BitmapFormat.PNG);
-//        return outputStream.toByteArray();
-//    }
 
     public byte[] generateAnovaChart(AnovaResultDto result) throws IOException {
         // Группируем по методам обучения
