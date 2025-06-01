@@ -1,12 +1,12 @@
 package kyrs.isis3.service;
 
-import kyrs.isis3.model.AnovaResultDto;
-import kyrs.isis3.model.GroupComparisonDto;
-import kyrs.isis3.model.StudentGroup;
+import kyrs.isis3.model.*;
 import kyrs.isis3.repository.GradeRepository;
 import kyrs.isis3.repository.StudentGroupRepository;
 import kyrs.isis3.repository.StudentRepository;
+import kyrs.isis3.repository.TeachingMethodRepository;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.math3.distribution.FDistribution;
 import org.apache.commons.math3.stat.inference.OneWayAnova;
 import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.CategoryChart;
@@ -24,38 +24,111 @@ public class StatisticsService {
     private final StudentRepository studentRepository;
     private final GradeRepository gradeRepository;
     private final StudentGroupRepository studentGroupRepository;
+    private final TeachingMethodRepository teachingMethodRepository;
 
     public AnovaResultDto performAnovaAnalysis() {
-        // Получаем все группы с их оценками
-        Map<StudentGroup, List<Double>> studentGroupsWithGrades = getStudentGroupsWithGrades();
-
-        // Формируем названия в формате "Группа - Метод"
-        List<String> groupNames = studentGroupsWithGrades.keySet().stream()
-                .map(group -> group.getNameGroup() + " - " + group.getTeachingMethod().getNameMethod())
+        Map<TeachingMethod, List<Double>> methodsWithGrades = getTeachingMethodsWithGrades();
+        List<String> methodNames = methodsWithGrades.keySet().stream()
+                .map(TeachingMethod::getNameMethod)
                 .collect(Collectors.toList());
 
-        // Подготовка данных для ANOVA
-        List<List<Double>> samples = new ArrayList<>();
+        // Вычисление общей средней
+        double grandMean = methodsWithGrades.values().stream()
+                .flatMap(List::stream)
+                .mapToDouble(Double::doubleValue)
+                .average()
+                .orElse(0);
 
-        studentGroupsWithGrades.forEach((studentGroup, grades) -> {
-            samples.add(grades);
-            groupNames.add(studentGroup.getNameGroup());
+        // Вычисление общей суммы квадратов (SST)
+        double totalSumOfSquares = methodsWithGrades.values().stream()
+                .flatMap(List::stream)
+                .mapToDouble(score -> Math.pow(score - grandMean, 2))
+                .sum();
+
+        // Вычисление суммы квадратов между группами (SSB)
+        double betweenGroupSumOfSquares = methodsWithGrades.entrySet().stream()
+                .mapToDouble(e -> e.getValue().size() * Math.pow(
+                        e.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(0) - grandMean, 2))
+                .sum();
+
+        // Вычисление суммы квадратов внутри групп (SSW)
+        double withinGroupSumOfSquares = methodsWithGrades.values().stream()
+                .mapToDouble(groupScores -> {
+                    double groupMean = groupScores.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+                    return groupScores.stream()
+                            .mapToDouble(score -> Math.pow(score - groupMean, 2))
+                            .sum();
+                })
+                .sum();
+
+        // Степени свободы
+        int totalDf = (int) methodsWithGrades.values().stream().mapToLong(List::size).sum() - 1;
+        int betweenGroupDf = methodsWithGrades.size() - 1;
+        int withinGroupDf = totalDf - betweenGroupDf;
+
+        // Средние квадраты
+        double betweenGroupMeanSquare = betweenGroupSumOfSquares / betweenGroupDf;
+        double withinGroupMeanSquare = withinGroupSumOfSquares / withinGroupDf;
+
+        // F-статистика
+        double fValue = betweenGroupMeanSquare / withinGroupMeanSquare;
+
+        // Вычисление p-value
+        double pValue = 1 - new FDistribution(betweenGroupDf, withinGroupDf).cumulativeProbability(fValue);
+
+        // Post-hoc анализ
+        List<GroupComparisonDto> comparisons = performTukeyHSD(
+                new ArrayList<>(methodsWithGrades.values()),
+                methodNames);
+
+        return new AnovaResultDto(
+                fValue, pValue, pValue < 0.05,
+                grandMean, totalSumOfSquares,
+                betweenGroupSumOfSquares, withinGroupSumOfSquares,
+                betweenGroupDf, withinGroupDf, totalDf,
+                betweenGroupMeanSquare, withinGroupMeanSquare,
+                comparisons);
+    }
+
+    private Map<TeachingMethod, List<Double>> getTeachingMethodsWithGrades() {
+        List<TeachingMethod> teachingMethods = teachingMethodRepository.findAll();
+        Map<TeachingMethod, List<Double>> result = new HashMap<>();
+
+        teachingMethods.forEach(method -> {
+            List<Double> grades = gradeRepository.findByTeachingMethodId(method.getIdTeachingMethod())
+                    .stream()
+                    .map(grade -> Double.parseDouble(grade.getValueScore()))
+                    .collect(Collectors.toList());
+            result.put(method, grades);
         });
 
-        // Выполняем ANOVA
-        OneWayAnova anova = new OneWayAnova();
+        return result;
+    }
 
-        Collection<double[]> samplesArray = samples.stream()
-                .map(list -> list.stream().mapToDouble(Double::doubleValue).toArray())
-                .collect(Collectors.toList());
+    public Map<String, MethodStats> calculateMethodStatistics() {
+        Map<TeachingMethod, List<Double>> methodsWithGrades = getTeachingMethodsWithGrades();
 
-        double fValue = anova.anovaFValue(samplesArray);
-        double pValue = anova.anovaPValue(samplesArray);
+        return methodsWithGrades.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> e.getKey().getNameMethod(),
+                        e -> {
+                            List<Double> grades = e.getValue();
+                            long count = grades.size();
+                            double mean = calculateMean(grades);
+                            double stdDev = calculateStdDev(grades, mean);
+                            double stdError = stdDev / Math.sqrt(count);
 
-        // Выполняем post-hoc тест (Tukey HSD)
-        List<GroupComparisonDto> comparisons = performTukeyHSD(samples, groupNames);
+                            return new MethodStats(count, mean, stdDev, stdError);
+                        }
+                ));
+    }
 
-        return new AnovaResultDto(fValue, pValue, pValue < 0.05, comparisons);
+    private double calculateStdDev(List<Double> values, double mean) {
+        double variance = values.stream()
+                .mapToDouble(v -> Math.pow(v - mean, 2))
+                .average()
+                .orElse(0);
+        return Math.sqrt(variance);
     }
 
     private Map<StudentGroup, List<Double>> getStudentGroupsWithGrades() {
@@ -73,8 +146,7 @@ public class StatisticsService {
         return result;
     }
 
-    private List<GroupComparisonDto> performTukeyHSD(List<List<Double>> samples, List<String> groupNames) {
-        // Упрощенная реализация Tukey HSD
+    private List<GroupComparisonDto> performTukeyHSD(List<List<Double>> samples, List<String> methodNames) {
         List<GroupComparisonDto> comparisons = new ArrayList<>();
 
         for (int i = 0; i < samples.size(); i++) {
@@ -83,12 +155,12 @@ public class StatisticsService {
                 double mean2 = calculateMean(samples.get(j));
                 double diff = mean1 - mean2;
 
-                // Упрощенный расчет p-value (в реальном проекте используйте библиотеку)
+                // Simplified p-value calculation (replace with actual Tukey HSD implementation)
                 double pValue = Math.abs(diff) > 5 ? 0.01 : 0.05;
 
                 comparisons.add(new GroupComparisonDto(
-                        groupNames.get(i),
-                        groupNames.get(j),
+                        methodNames.get(i),  // Just use method name directly
+                        methodNames.get(j),  // Just use method name directly
                         diff,
                         pValue,
                         pValue < 0.05
@@ -104,24 +176,24 @@ public class StatisticsService {
     }
 
     public byte[] generateAnovaChart(AnovaResultDto result) throws IOException {
-        // Группируем по методам обучения
+        // Group comparisons by methods and calculate average differences
         Map<String, Double> methodAverages = result.getGroupComparisons().stream()
                 .collect(Collectors.groupingBy(
-                        comparison -> comparison.getGroup1().split(" - ")[1], // Предполагаем формат "Группа - Метод"
+                        GroupComparisonDto::getGroup1,  // Use method name directly
                         Collectors.averagingDouble(GroupComparisonDto::getMeanDifference)
                 ));
 
-        // Сортируем методы обучения по имени
+        // Sort methods by name
         List<String> methods = methodAverages.keySet().stream()
                 .sorted()
                 .collect(Collectors.toList());
 
-        // Получаем средние значения в том же порядке
+        // Get means in the same order
         List<Double> means = methods.stream()
                 .map(methodAverages::get)
                 .collect(Collectors.toList());
 
-        // Создаем график
+        // Create chart
         CategoryChart chart = new CategoryChartBuilder()
                 .width(800)
                 .height(600)
@@ -130,11 +202,8 @@ public class StatisticsService {
                 .yAxisTitle("Средняя оценка")
                 .build();
 
-        // Добавляем данные
         chart.addSeries("Средние оценки", methods, means);
-
-        // Настраиваем отображение
-        chart.getStyler().setXAxisLabelRotation(45); // Наклон подписей
+        chart.getStyler().setXAxisLabelRotation(45);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         BitmapEncoder.saveBitmap(chart, outputStream, BitmapEncoder.BitmapFormat.PNG);

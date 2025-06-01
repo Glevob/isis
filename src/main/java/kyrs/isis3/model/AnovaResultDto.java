@@ -10,17 +10,49 @@ import java.util.List;
 public class AnovaResultDto {
     private double fValue;
     private double pValue;
-    private boolean isSignificant;
+    private boolean significant;
+    private double grandMean;
+    private double totalSumOfSquares;
+    private double betweenGroupSumOfSquares;
+    private double withinGroupSumOfSquares;
+    private int betweenGroupDf;
+    private int withinGroupDf;
+    private int totalDf;
+    private double betweenGroupMeanSquare;
+    private double withinGroupMeanSquare;
     private List<GroupComparisonDto> groupComparisons;
 
-    public AnovaResultDto(double fValue, double pValue, boolean isSignificant, List<GroupComparisonDto> groupComparisons) {
+    public AnovaResultDto(double fValue, double pValue, boolean significant, List<GroupComparisonDto> groupComparisons) {
         this.fValue = fValue;
         this.pValue = pValue;
-        this.isSignificant = isSignificant;
+        this.significant = significant;
         this.groupComparisons = groupComparisons;
     }
 
     public AnovaResultDto() {}
+
+
+
+    public AnovaResultDto(double fValue, double pValue, boolean significant, double grandMean,
+                          double totalSumOfSquares, double betweenGroupSumOfSquares,
+                          double withinGroupSumOfSquares, int betweenGroupDf, int withinGroupDf,
+                          int totalDf, double betweenGroupMeanSquare, double withinGroupMeanSquare,
+                          List<GroupComparisonDto> comparisons) {
+        this.fValue = fValue;
+        this.pValue = pValue;
+        this.significant = significant;
+        this.grandMean = grandMean;
+        this.totalSumOfSquares = totalSumOfSquares;
+        this.betweenGroupSumOfSquares = betweenGroupSumOfSquares;
+        this.withinGroupSumOfSquares = withinGroupSumOfSquares;
+        this.betweenGroupDf = betweenGroupDf;
+        this.withinGroupDf = withinGroupDf;
+        this.totalDf = totalDf;
+        this.betweenGroupMeanSquare = betweenGroupMeanSquare;
+        this.withinGroupMeanSquare = withinGroupMeanSquare;
+        this.groupComparisons = comparisons;
+
+    }
     // getters, setters, constructor
 }
 

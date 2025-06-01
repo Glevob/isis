@@ -23,4 +23,7 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
     @Modifying
     @Query("DELETE FROM Grade g WHERE g.student.studentGroup.idStudentGroup = :studentGroupId")
     void deleteByStudentGroupId(@Param("studentGroupId") Long studentGroupId);
+
+    @Query("SELECT g FROM Grade g WHERE g.student.studentGroup.teachingMethod.idTeachingMethod = :teachingMethodId")
+    List<Grade> findByTeachingMethodId(@Param("teachingMethodId") Long teachingMethodId);
 }
