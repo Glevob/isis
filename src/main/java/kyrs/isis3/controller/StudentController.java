@@ -16,6 +16,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.LinkedHashSet;
 
 import java.time.LocalDate;
@@ -257,5 +263,58 @@ public class StudentController {
         model.addAttribute("selectedGroup", studentGroupId);
         model.addAttribute("selectedMethod", teachingMethodId);
         return "student-main";
+    }
+
+
+    ////////////////
+    @GetMapping("/student/upload")
+    public String showUploadForm(Model model) {
+        model.addAttribute("studentGroups", studentGroupRepository.findAll());
+        return "student-upload";
+    }
+
+    @PostMapping("/student/upload")
+    public String uploadStudents(@RequestParam("file") MultipartFile file,
+                                 @RequestParam Long studentGroupId,
+                                 RedirectAttributes redirectAttributes) {
+
+        if (file.isEmpty()) {
+            redirectAttributes.addFlashAttribute("message", "Пожалуйста, выберите файл для загрузки");
+            return "redirect:/student/upload";
+        }
+
+        try {
+            StudentGroup group = studentGroupRepository.findById(studentGroupId)
+                    .orElseThrow(() -> new IllegalArgumentException("Группа не найдена"));
+
+            InputStream inputStream = file.getInputStream();
+            BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+
+            // Пропускаем заголовок, если есть
+            reader.readLine();
+
+            String line;
+            int count = 0;
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length >= 1) {
+                    String fullName = data[0].trim();
+                    if (!fullName.isEmpty()) {
+                        Student student = new Student(fullName, group);
+                        studentRepository.save(student);
+                        count++;
+                    }
+                }
+            }
+
+            redirectAttributes.addFlashAttribute("message",
+                    "Успешно загружено " + count + " студентов в группу " + group.getNameGroup());
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("message",
+                    "Ошибка при загрузке файла: " + e.getMessage());
+        }
+
+        return "redirect:/student";
     }
 }
