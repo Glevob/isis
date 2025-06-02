@@ -33,4 +33,8 @@ public class TeachingMethod {
     }
 
     public TeachingMethod() {}
+
+    public TeachingMethod(String nameMethod, String s) {
+
+    }
 }

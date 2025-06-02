@@ -5,6 +5,7 @@ import kyrs.isis3.model.Grade;
 import kyrs.isis3.model.Student;
 import kyrs.isis3.model.StudentGroup;
 import kyrs.isis3.model.TeachingMethod;
+import kyrs.isis3.repository.GradeRepository;
 import kyrs.isis3.repository.StudentGroupRepository;
 import kyrs.isis3.repository.StudentRepository;
 import kyrs.isis3.repository.TeachingMethodRepository;
@@ -28,6 +29,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Controller
@@ -46,6 +48,8 @@ public class StudentController {
     private TeachingMethodService teachingMethodService;
     @Autowired
     private GradeService gradeService;
+    @Autowired
+    private GradeRepository gradeRepository;
 
     @GetMapping("/student/add")
     public String studentAdd(Model model) {
@@ -313,6 +317,105 @@ public class StudentController {
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("message",
                     "Ошибка при загрузке файла: " + e.getMessage());
+        }
+
+        return "redirect:/student";
+    }
+
+
+
+    ////
+    @GetMapping("/all/upload")
+    public String showUpload2Form(Model model) {
+        model.addAttribute("teachingMethods", teachingMethodRepository.findAll());
+        return "all-upload";
+    }
+
+    @PostMapping("/all/upload")
+    public String uploadStudents(@RequestParam("file") MultipartFile file,
+                                 RedirectAttributes redirectAttributes) {
+        if (file.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Пожалуйста, выберите файл для загрузки");
+            return "redirect:/all/upload";
+        }
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
+            // Пропускаем заголовок
+            reader.readLine();
+
+            String line;
+            AtomicInteger studentCount = new AtomicInteger();
+            // Объявляем переменные как AtomicInteger для потокобезопасности
+            AtomicInteger gradeUpdatedCount = new AtomicInteger(0);
+            AtomicInteger gradeCount = new AtomicInteger(0);
+
+            while ((line = reader.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data.length != 6) {
+                    continue; // Пропускаем некорректные строки
+                }
+
+                // Парсим данные из CSV
+                String fullName = data[0].trim();
+                String groupName = data[1].trim();
+                String methodName = data[2].trim();
+                double score = Double.parseDouble(data[3].trim());
+                LocalDate testDate = LocalDate.parse(data[4].trim());
+                String testName = data[5].trim();
+
+                // Находим или создаем метод обучения
+                TeachingMethod method = teachingMethodRepository.findByNameMethod(methodName)
+                        .orElseGet(() -> {
+                            TeachingMethod newMethod = new TeachingMethod(methodName);
+                            return teachingMethodRepository.save(newMethod);
+                        });
+
+                // Находим или создаем группу
+                StudentGroup group = studentGroupRepository.findByNameGroup(groupName)
+                        .orElseGet(() -> {
+                            StudentGroup newGroup = new StudentGroup(groupName, method);
+                            return studentGroupRepository.save(newGroup);
+                        });
+
+                // Находим или создаем студента
+                Student student = studentRepository.findByFullNameAndStudentGroup(fullName, group)
+                        .orElseGet(() -> {
+                            Student newStudent = new Student(fullName, group);
+                            studentRepository.save(newStudent);
+                            studentCount.getAndIncrement();
+                            return newStudent;
+                        });
+
+                // Проверяем существование оценки
+                Optional<Grade> existingGrade = gradeRepository.findByStudentAndTestNameAndTestDate(
+                        student, testName, testDate);
+
+
+
+                if (existingGrade.isPresent()) {
+                    // Обновляем существующую оценку
+                    Grade grade = existingGrade.get();
+                    grade.setValueScore(String.valueOf(score));
+                    gradeRepository.save(grade);
+                    gradeUpdatedCount.incrementAndGet(); // Используем метод incrementAndGet() для AtomicInteger
+                } else {
+                    // Создаем новую оценку
+                    Grade grade = new Grade();
+                    grade.setStudent(student);
+                    grade.setValueScore(String.valueOf(score));
+                    grade.setTestDate(testDate);
+                    grade.setTestName(testName);
+                    gradeRepository.save(grade);
+                    gradeCount.incrementAndGet(); // Используем метод incrementAndGet() для AtomicInteger
+                }
+            }
+
+            redirectAttributes.addFlashAttribute("success",
+                    String.format("Успешно загружено: %d студентов и %d оценок", studentCount, gradeCount));
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Ошибка при обработке файла: " + e.getMessage());
         }
 
         return "redirect:/student";

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,10 @@ import java.util.Optional;
 public interface GradeRepository extends JpaRepository<Grade, Long> {
     List<Grade> findByStudent(Optional<Student> student);
     List<Grade> findByStudentStudentGroupIdStudentGroup(Long studentGroupId);
+    Optional<Grade> findByStudentAndTestNameAndTestDate(
+            Student student,
+            String testName,
+            LocalDate testDate);
 
     @Modifying
     @Query("DELETE FROM Grade g WHERE g.student.studentGroup.idStudentGroup = :studentGroupId")

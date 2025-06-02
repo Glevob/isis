@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long>, PagingAndSortingRepository<StudentGroup, Long> {
     List<StudentGroup> findByTeachingMethodIdTeachingMethod(Long idTeachingMethod);
-
+    Optional<StudentGroup> findByNameGroup(String name);
     @Modifying
     @Query("DELETE FROM Student s WHERE s.studentGroup.idStudentGroup = :studentGroupId")
     void deleteStudentsByGroupId(@Param("studentGroupId") Long studentGroupId);
