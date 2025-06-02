@@ -93,8 +93,8 @@
         </tr>
         <tr class="overall-mean">
             <td><strong>Общая средняя</strong></td>
-            <td th:text="${totalCount}"></td>
-            <td th:text="${#numbers.formatDecimal(overallMean, 1, 2)}"></td>
+            <td>-</td>
+            <td th:text="${#numbers.formatDecimal(anovaResult.grandMean, 1, 2)}"></td>
         </tr>
         </tbody>
     </table>

@@ -30,15 +30,88 @@ public class StatisticsService {
     private final StudentGroupRepository studentGroupRepository;
     private final TeachingMethodRepository teachingMethodRepository;
 
+//    public AnovaResultDto performAnovaAnalysis() {
+//        Map<TeachingMethod, List<Double>> methodsWithGrades = getTeachingMethodsWithGrades();
+//        List<String> methodNames = methodsWithGrades.keySet().stream()
+//                .map(TeachingMethod::getNameMethod)
+//                .collect(Collectors.toList());
+//
+//        // Вычисление общей средней
+//        double grandMean = methodsWithGrades.values().stream() //Преобразуем Map в Stream списков оценок: [[4.0,5.0,6.0], [3.0,4.0,5.0], [2.0,3.0,4.0]]
+//                .flatMap(List::stream)                         //"Разворачиваем" вложенные списки в один Stream: [4.0, 5.0, 6.0, 3.0, 4.0, 5.0, 2.0, 3.0, 4.0]
+//                .mapToDouble(Double::doubleValue)              //Конвертируем Double в примитивный double: [4.0, 5.0, 6.0, 3.0, 4.0, 5.0, 2.0, 3.0, 4.0]
+//                .average()                                     //Вычисляем среднее значение: (4.0 + 5.0 + 6.0 + 3.0 + 4.0 + 5.0 + 2.0 + 3.0 + 4.0) / 9 = 36.0 / 9 = 4.0
+//                .orElse(0);                              //Если бы список был пуст, вернули бы 0
+//
+//        // Вычисление общей суммы квадратов (SST)
+//        double totalSumOfSquares = methodsWithGrades.values().stream()
+//                .flatMap(List::stream)
+//                .mapToDouble(score -> Math.pow(score - grandMean, 2))
+//                .sum();
+//
+//        // Вычисление суммы квадратов между группами (SSB)
+//        double betweenGroupSumOfSquares = methodsWithGrades.entrySet().stream()
+//                .mapToDouble(e -> e.getValue().size() * Math.pow(
+//                        e.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(0) - grandMean, 2))
+//                .sum();
+//
+//        // Вычисление суммы квадратов внутри групп (SSW)
+//        double withinGroupSumOfSquares = methodsWithGrades.values().stream()
+//                .mapToDouble(groupScores -> {
+//                    double groupMean = groupScores.stream().mapToDouble(Double::doubleValue).average().orElse(0);
+//                    return groupScores.stream()
+//                            .mapToDouble(score -> Math.pow(score - groupMean, 2))
+//                            .sum();
+//                })
+//                .sum();
+//
+//        // Степени свободы
+//        int totalDf = (int) methodsWithGrades.values().stream().mapToLong(List::size).sum() - 1;
+//        int betweenGroupDf = methodsWithGrades.size() - 1;
+//        int withinGroupDf = totalDf - betweenGroupDf;
+//
+//        // Средние квадраты
+//        double betweenGroupMeanSquare = betweenGroupSumOfSquares / betweenGroupDf;
+//        double withinGroupMeanSquare = withinGroupSumOfSquares / withinGroupDf;
+//
+//        // F-статистика
+//        double fValue = betweenGroupMeanSquare / withinGroupMeanSquare;
+//
+//        // Вычисление p-value
+//        double pValue = 1 - new FDistribution(betweenGroupDf, withinGroupDf).cumulativeProbability(fValue);
+//
+//        // Post-hoc анализ
+//        List<GroupComparisonDto> comparisons = performTukeyHSD(
+//                new ArrayList<>(methodsWithGrades.values()),
+//                methodNames);
+//
+//        return new AnovaResultDto(
+//                fValue, pValue, pValue < 0.05,
+//                grandMean, totalSumOfSquares,
+//                betweenGroupSumOfSquares, withinGroupSumOfSquares,
+//                betweenGroupDf, withinGroupDf, totalDf,
+//                betweenGroupMeanSquare, withinGroupMeanSquare,
+//                comparisons);
+//    }
+
     public AnovaResultDto performAnovaAnalysis() {
         Map<TeachingMethod, List<Double>> methodsWithGrades = getTeachingMethodsWithGrades();
         List<String> methodNames = methodsWithGrades.keySet().stream()
                 .map(TeachingMethod::getNameMethod)
                 .collect(Collectors.toList());
 
-        // Вычисление общей средней
-        double grandMean = methodsWithGrades.values().stream()
-                .flatMap(List::stream)
+        // Вычисляем средние для каждой группы
+        Map<TeachingMethod, Double> groupMeans = methodsWithGrades.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().stream()
+                                .mapToDouble(Double::doubleValue)
+                                .average()
+                                .orElse(0)
+                ));
+
+        // НОВЫЙ РАСЧЕТ: Общая средняя = среднее групповых средних
+        double grandMean = groupMeans.values().stream()
                 .mapToDouble(Double::doubleValue)
                 .average()
                 .orElse(0);
@@ -52,14 +125,14 @@ public class StatisticsService {
         // Вычисление суммы квадратов между группами (SSB)
         double betweenGroupSumOfSquares = methodsWithGrades.entrySet().stream()
                 .mapToDouble(e -> e.getValue().size() * Math.pow(
-                        e.getValue().stream().mapToDouble(Double::doubleValue).average().orElse(0) - grandMean, 2))
+                        groupMeans.get(e.getKey()) - grandMean, 2)) // Используем предвычисленные средние
                 .sum();
 
         // Вычисление суммы квадратов внутри групп (SSW)
-        double withinGroupSumOfSquares = methodsWithGrades.values().stream()
-                .mapToDouble(groupScores -> {
-                    double groupMean = groupScores.stream().mapToDouble(Double::doubleValue).average().orElse(0);
-                    return groupScores.stream()
+        double withinGroupSumOfSquares = methodsWithGrades.entrySet().stream()
+                .mapToDouble(e -> {
+                    double groupMean = groupMeans.get(e.getKey());
+                    return e.getValue().stream()
                             .mapToDouble(score -> Math.pow(score - groupMean, 2))
                             .sum();
                 })
@@ -268,125 +341,9 @@ public class StatisticsService {
         return groupValues.get(closestDf);
     }
 
-
-
-
-
-
-
-
-
-
     private double calculateMean(List<Double> values) {
         return values.stream().mapToDouble(Double::doubleValue).average().orElse(0);
     }
-
-//    public byte[] generateAnovaChart(AnovaResultDto result) throws IOException {
-////
-////        // Получаем упорядоченные сравнения
-////        List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
-////                .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
-////                .collect(Collectors.toList());
-////
-////        // Подготавливаем данные для графика
-////        List<String> comparisonLabels = Arrays.asList("1-2", "1-3", "2-3");
-////        List<Double> differences = comparisons.stream()
-////                .map(GroupComparisonDto::getMeanDifference)
-////                .collect(Collectors.toList());
-////        List<Double> criticalValues = comparisons.stream()
-////                .map(GroupComparisonDto::getCriticalValue)
-////                .collect(Collectors.toList());
-////
-////        // Создаем график
-////        CategoryChart chart = new CategoryChartBuilder()
-////                .width(800)
-////                .height(600)
-////                .title("Сравнение методов обучения (Tukey HSD)")
-////                .xAxisTitle("Парные сравнения")
-////                .yAxisTitle("Разница средних")
-////                .build();
-//
-////        // Получаем упорядоченные сравнения
-////        List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
-////                .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
-////                .collect(Collectors.toList());
-////
-////        // Подготавливаем данные для графика
-////        List<String> comparisonLabels = Arrays.asList("1-2", "1-3", "2-3");
-////        List<Double> differences = comparisons.stream()
-////                .map(GroupComparisonDto::getMeanDifference)
-////                .collect(Collectors.toList());
-////        List<Double> criticalValues = comparisons.stream()
-////                .map(GroupComparisonDto::getCriticalValue)
-////                .collect(Collectors.toList());
-////
-////        // Создаем график
-////        CategoryChart chart = new CategoryChartBuilder()
-////                .width(800)
-////                .height(600)
-////                .title("Сравнение методов обучения (Tukey HSD)")
-////                .xAxisTitle("Парные сравнения")
-////                .yAxisTitle("Разница средних")
-////                .build();
-//
-//        // Получаем упорядоченные сравнения
-//        List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
-//                .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
-//                .collect(Collectors.toList());
-//
-//        // Подготавливаем данные для графика
-//        List<String> comparisonLabels = comparisons.stream()
-//                .map(comp -> comp.getGroup1() + "-" + comp.getGroup2())
-//                .collect(Collectors.toList());
-//
-//        List<Double> differences = comparisons.stream()
-//                .map(GroupComparisonDto::getMeanDifference)
-//                .collect(Collectors.toList());
-//
-//        List<Double> criticalValues = comparisons.stream()
-//                .map(GroupComparisonDto::getCriticalValue)
-//                .collect(Collectors.toList());
-//
-//        // Создаем график
-//        CategoryChart chart = new CategoryChartBuilder()
-//                .width(800)
-//                .height(600)
-//                .title("Сравнение методов обучения (Tukey HSD)")
-//                .xAxisTitle("Парные сравнения")
-//                .yAxisTitle("Разница средних")
-//                .build();
-//
-//        // Настраиваем стиль графика
-//        chart.getStyler()
-//                .setDefaultSeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar)
-//                .setPlotGridVerticalLinesVisible(false)
-//                .setLegendPosition(Styler.LegendPosition.InsideNE);
-//
-//        // Добавляем столбцы с разницами
-//        chart.addSeries("Difference", comparisonLabels, differences);
-//
-//        // Добавляем линии критических значений
-//        chart.addSeries("Critical value", comparisonLabels, criticalValues)
-//                .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Line);
-//
-//        // Добавляем горизонтальную линию для нуля
-//        chart.addSeries("Zero line",
-//                        Arrays.asList("1-2", "2-3"),
-//                        Arrays.asList(0.0, 0.0))
-//                .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Line);
-//
-//        // Настраиваем цвета
-//        chart.getStyler().setSeriesColors(new Color[]{
-//                new Color(70, 130, 180),  // Difference - steel blue
-//                new Color(220, 20, 60),    // Critical value - crimson
-//                new Color(0, 0, 0)         // Zero line - black
-//        });
-//
-//        // Сохраняем график в изображение
-//        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-//        BitmapEncoder.saveBitmap(chart, outputStream, BitmapEncoder.BitmapFormat.PNG);
-//        return outputStream.toByteArray();
-//    }
 
     public byte[] generateAnovaChart(AnovaResultDto result) throws IOException {
         // Получаем упорядоченные сравнения
@@ -416,13 +373,6 @@ public class StatisticsService {
                 .yAxisTitle("Разница средних")
                 .build();
 
-//        // Настраиваем стиль графика
-//        chart.getStyler()
-//                .setDefaultSeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar)
-//                .setPlotGridVerticalLinesVisible(false)
-//                .setLegendPosition(Styler.LegendPosition.InsideNE)
-//                .setOverlapped(true); // Разрешаем перекрытие столбцов
-
         // Добавляем столбцы с критическими значениями (фоном)
         chart.addSeries("Critical value", comparisonLabels, criticalValues)
                 .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar);
@@ -436,9 +386,6 @@ public class StatisticsService {
                 new Color(220, 20, 60, 100),  // Critical value - crimson с прозрачностью
                 new Color(70, 130, 180)       // Difference - steel blue
         });
-
-//        // Настраиваем ширину столбцов
-//        chart.getStyler().setBarWidth(0.4);
 
         // Добавляем горизонтальную линию для нуля
         chart.addSeries("Zero line",
