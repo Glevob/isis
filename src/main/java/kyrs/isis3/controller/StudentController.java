@@ -345,39 +345,37 @@ public class StudentController {
 
             String line;
             AtomicInteger studentCount = new AtomicInteger();
-            // Объявляем переменные как AtomicInteger для потокобезопасности
             AtomicInteger gradeUpdatedCount = new AtomicInteger(0);
             AtomicInteger gradeCount = new AtomicInteger(0);
 
             while ((line = reader.readLine()) != null) {
-                String[] data = line.split(",");
+                String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)"); // Правильное разделение с учетом кавычек
+
                 if (data.length != 6) {
                     continue; // Пропускаем некорректные строки
                 }
 
-                // Парсим данные из CSV
-                String fullName = data[0].trim();
-                String groupName = data[1].trim();
-                String methodName = data[2].trim();
-                double score = Double.parseDouble(data[3].trim());
-                LocalDate testDate = LocalDate.parse(data[4].trim());
-                String testName = data[5].trim();
+                // Очищаем каждое поле от кавычек и лишних пробелов
+                String fullName = data[0].trim().replaceAll("^\"|\"$", "");
+                String groupName = data[1].trim().replaceAll("^\"|\"$", "");
+                String methodName = data[2].trim().replaceAll("^\"|\"$", "");
+                double score = Double.parseDouble(data[3].trim().replaceAll("^\"|\"$", ""));
+                LocalDate testDate = LocalDate.parse(data[4].trim().replaceAll("^\"|\"$", ""));
+                String testName = data[5].trim().replaceAll("^\"|\"$", "");
 
-                // Находим или создаем метод обучения
+                // Остальной код без изменений
                 TeachingMethod method = teachingMethodRepository.findByNameMethod(methodName)
                         .orElseGet(() -> {
                             TeachingMethod newMethod = new TeachingMethod(methodName);
                             return teachingMethodRepository.save(newMethod);
                         });
 
-                // Находим или создаем группу
                 StudentGroup group = studentGroupRepository.findByNameGroup(groupName)
                         .orElseGet(() -> {
                             StudentGroup newGroup = new StudentGroup(groupName, method);
                             return studentGroupRepository.save(newGroup);
                         });
 
-                // Находим или создаем студента
                 Student student = studentRepository.findByFullNameAndStudentGroup(fullName, group)
                         .orElseGet(() -> {
                             Student newStudent = new Student(fullName, group);
@@ -386,32 +384,28 @@ public class StudentController {
                             return newStudent;
                         });
 
-                // Проверяем существование оценки
                 Optional<Grade> existingGrade = gradeRepository.findByStudentAndTestNameAndTestDate(
                         student, testName, testDate);
 
-
-
                 if (existingGrade.isPresent()) {
-                    // Обновляем существующую оценку
                     Grade grade = existingGrade.get();
                     grade.setValueScore(String.valueOf(score));
                     gradeRepository.save(grade);
-                    gradeUpdatedCount.incrementAndGet(); // Используем метод incrementAndGet() для AtomicInteger
+                    gradeUpdatedCount.incrementAndGet();
                 } else {
-                    // Создаем новую оценку
                     Grade grade = new Grade();
                     grade.setStudent(student);
                     grade.setValueScore(String.valueOf(score));
                     grade.setTestDate(testDate);
                     grade.setTestName(testName);
                     gradeRepository.save(grade);
-                    gradeCount.incrementAndGet(); // Используем метод incrementAndGet() для AtomicInteger
+                    gradeCount.incrementAndGet();
                 }
             }
 
             redirectAttributes.addFlashAttribute("success",
-                    String.format("Успешно загружено: %d студентов и %d оценок", studentCount, gradeCount));
+                    String.format("Успешно загружено: %d студентов и %d оценок",
+                            studentCount.get(), gradeCount.get()));
 
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error",
