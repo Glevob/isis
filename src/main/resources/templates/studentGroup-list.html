@@ -23,37 +23,57 @@
             align-items: center;
             justify-content: center;
         }
+        html, body {
+            height: 100%;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .content {
+            flex: 1 0 auto;
+            padding-bottom: 60px; /* Отступ для футера */
+        }
+        .footer {
+            flex-shrink: 0;
+            width: 100%;
+            height: 60px; /* Высота футера */
+            line-height: 60px; /* Центрирование текста по вертикали */
+        }
     </style>
 </head>
 <body>
 <div th:insert="~{blocks/header :: header}"></div>
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Список учебных групп</h1>
-        <a href="/studentGroup/add" class="btn btn-primary">Добавить группу</a>
-    </div>
+<div class="content">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Список учебных групп</h1>
+            <a href="/studentGroup/add" class="btn btn-primary">Добавить группу</a>
+        </div>
 
-    <!-- Список групп -->
-    <div class="row row-cols-1 row-cols-md-3 g-4">
-        <div th:each="studentGroup : ${studentGroups}" class="col">
-            <div class="card group-card h-100"
-                 th:onclick="'window.location.href=\'/studentGroup/' + ${studentGroup.idStudentGroup} + '/students\''">
-                <div class="card-body">
-                    <h5 class="card-title" th:text="${studentGroup.nameGroup}">Название группы</h5>
-                    <h3 class="card-title" th:text="${studentGroup.teachingMethod.nameMethod}">Метод обучения</h3>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span class="text-muted">Количество студентов:</span>
-                        <span class="badge bg-primary student-count-badge"
-                              th:text="${studentGroup.students.size()}">0</span>
+        <!-- Список групп -->
+        <div class="row row-cols-1 row-cols-md-3 g-4">
+            <div th:each="studentGroup : ${studentGroups}" class="col">
+                <div class="card group-card h-100"
+                     th:onclick="'window.location.href=\'/studentGroup/' + ${studentGroup.idStudentGroup} + '/students\''">
+                    <div class="card-body">
+                        <h5 class="card-title" th:text="${studentGroup.nameGroup}">Название группы</h5>
+                        <h3 class="card-title" th:text="${studentGroup.teachingMethod.nameMethod}">Метод обучения</h3>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted">Количество студентов:</span>
+                            <span class="badge bg-primary student-count-badge"
+                                  th:text="${studentGroup.students.size()}">0</span>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<div th:insert="~{blocks/footer :: footer}"></div>
+<footer class="footer bg-light text-center">
+    <div th:insert="~{blocks/footer :: footer}"></div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

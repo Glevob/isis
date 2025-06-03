@@ -5,53 +5,73 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Студенты группы</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .content {
+            flex: 1 0 auto;
+            padding-bottom: 60px; /* Отступ для футера */
+        }
+        .footer {
+            flex-shrink: 0;
+            width: 100%;
+            height: 60px; /* Высота футера */
+            line-height: 60px; /* Центрирование текста по вертикали */
+        }
+    </style>
 </head>
 <body>
 <div th:insert="~{blocks/header :: header}"></div>
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>
-            <span th:text="'Студенты группы: ' + ${studentGroup.nameGroup} + '. Метод обучения: ' + ${studentGroup.teachingMethod.nameMethod}"></span>
-        </h1>
-        <div>
-            <button type="button" class="btn btn-danger me-2"
-                    data-bs-toggle="modal"
-                    data-bs-target="#deleteGroupModal"
-                    th:attr="data-bs-group-id=${studentGroup.idStudentGroup},
-                            data-bs-group-name=${studentGroup.nameGroup},
-                            data-bs-students-count=${students.size()}">
-                Удалить группу
-            </button>
-            <a th:href="@{'/studentGroup/' + ${studentGroup.idStudentGroup} + '/grades'}"
-               class="btn btn-primary me-2">Оценки группы</a>
-            <a th:href="@{/student/add}" class="btn btn-primary">Добавить студента</a>
+<div class="content">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>
+                <span th:text="'Студенты группы: ' + ${studentGroup.nameGroup} + '. Метод обучения: ' + ${studentGroup.teachingMethod.nameMethod}"></span>
+            </h1>
+            <div>
+                <button type="button" class="btn btn-danger me-2"
+                        data-bs-toggle="modal"
+                        data-bs-target="#deleteGroupModal"
+                        th:attr="data-bs-group-id=${studentGroup.idStudentGroup},
+                                data-bs-group-name=${studentGroup.nameGroup},
+                                data-bs-students-count=${students.size()}">
+                    Удалить группу
+                </button>
+                <a th:href="@{'/studentGroup/' + ${studentGroup.idStudentGroup} + '/grades'}"
+                   class="btn btn-primary me-2">Оценки группы</a>
+                <a th:href="@{/student/add}" class="btn btn-primary">Добавить студента</a>
+            </div>
         </div>
-    </div>
 
-    <!-- Список студентов -->
-    <div class="list-group">
-        <div th:each="student : ${students}" class="list-group-item">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h5 th:text="${student.fullName}"></h5>
-                    <small class="text-muted" th:text="'ID: ' + ${student.idStudent}"></small>
-                </div>
-                <div>
-                    <a th:href="@{'/student/' + ${student.idStudent}}"
-                       class="btn btn-sm btn-outline-primary me-2">Подробнее</a>
-                    <a th:href="@{/student/{studentId}/grades(studentId=${student.idStudent})}"
-                       class="btn btn-sm btn-outline-secondary">Оценки</a>
+        <!-- Список студентов -->
+        <div class="list-group">
+            <div th:each="student : ${students}" class="list-group-item">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 th:text="${student.fullName}"></h5>
+                        <small class="text-muted" th:text="'ID: ' + ${student.idStudent}"></small>
+                    </div>
+                    <div>
+                        <a th:href="@{'/student/' + ${student.idStudent}}"
+                           class="btn btn-sm btn-outline-primary me-2">Подробнее</a>
+                        <a th:href="@{/student/{studentId}/grades(studentId=${student.idStudent})}"
+                           class="btn btn-sm btn-outline-secondary">Оценки</a>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <div class="mt-4">
-        <a href="/studentGroup" class="btn btn-outline-secondary">Назад к списку групп</a>
+        <div class="mt-4">
+            <a href="/studentGroup" class="btn btn-outline-secondary">Назад к списку групп</a>
+        </div>
     </div>
 </div>
-
 <!-- Модальное окно подтверждения удаления -->
 <div class="modal fade" id="deleteGroupModal" tabindex="-1" aria-labelledby="deleteGroupModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -75,7 +95,9 @@
     </div>
 </div>
 
-<div th:insert="~{blocks/footer :: footer}"></div>
+<footer class="footer bg-light text-center">
+    <div th:insert="~{blocks/footer :: footer}"></div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>

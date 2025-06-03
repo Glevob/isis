@@ -29,146 +29,150 @@
         th {
             background-color: #f2f2f2;
         }
+        html, body {
+            height: 100%;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .content {
+            flex: 1 0 auto;
+            padding-bottom: 60px; /* Отступ для футера */
+        }
+        .footer {
+            flex-shrink: 0;
+            width: 100%;
+            height: 60px; /* Высота футера */
+            line-height: 60px; /* Центрирование текста по вертикали */
+        }
     </style>
 </head>
 <body>
 <div th:insert="~{blocks/header :: header}"></div>
 
-<div class="container py-4">
-    <h1>Результаты дисперсионного анализа (ANOVA)</h1>
-    <h5>Влияет ли метод обучения на успеваемость студентов?</h5>
+<div class="content">
+    <div class="container py-4">
+        <h1>Результаты дисперсионного анализа (ANOVA)</h1>
+        <h5>Влияет ли метод обучения на успеваемость студентов?</h5>
 
-    <div class="alert alert-primary mt-4">
-        <h4>Гипотезы:</h4>
-        <p><strong>H₀:</strong> Все методы обучения одинаково эффективны (μ₁ = μ₂ = μ₃)</p>
-        <p><strong>H₁:</strong> Хотя бы один метод обучения отличается по эффективности</p>
-    </div>
+        <div class="alert alert-primary mt-4">
+            <h4>Гипотезы:</h4>
+            <p><strong>H₀:</strong> Все методы обучения одинаково эффективны (μ₁ = μ₂ = μ₃)</p>
+            <p><strong>H₁:</strong> Хотя бы один метод обучения отличается по эффективности</p>
+        </div>
 
-<!--    <div class="alert alert-info">-->
-<!--        <h4>Основные результаты:</h4>-->
-<!--        <p>F-значение: <span th:text="${#numbers.formatDecimal(anovaResult.fValue, 1, 2)}"></span></p>-->
-<!--        <p>p-значение:-->
-<!--            <span th:text="${#numbers.formatDecimal(anovaResult.pValue, 1, 4)}"-->
-<!--                  th:class="${anovaResult.significant} ? 'significance' : ''"></span>-->
-<!--            <span th:if="${anovaResult.significant}" class="significance">(значимо)</span>-->
-<!--            <span th:unless="${anovaResult.significant}">(не значимо)</span>-->
-<!--        </p>-->
-<!--    </div>-->
-
-    <div class="alert alert-info">
-        <h4>Основные метрики:</h4>
-        <p>Общая средняя (Grand Mean): <strong th:text="${#numbers.formatDecimal(anovaResult.grandMean, 1, 2)}"></strong></p>
-        <p>Общая сумма квадратов отклонений (SST): <strong th:text="${#numbers.formatDecimal(anovaResult.totalSumOfSquares, 1, 2)}"></strong></p>
-        <p>F-значение: <strong th:text="${#numbers.formatDecimal(anovaResult.fValue, 1, 2)}"></strong></p>
-        <p>p-значение:
-            <strong th:text="${#numbers.formatDecimal(anovaResult.pValue, 1, 4)}"
-                    th:class="${anovaResult.significant} ? 'significance' : ''"></strong>
-            <span th:if="${anovaResult.significant}" class="significance">(значимо)</span>
-            <span th:unless="${anovaResult.significant}">(не значимо)</span>
-        </p>
-    </div>
+        <div class="alert alert-info">
+            <h4>Основные метрики:</h4>
+            <p>Общая средняя (Grand Mean): <strong th:text="${#numbers.formatDecimal(anovaResult.grandMean, 1, 2)}"></strong></p>
+            <p>Общая сумма квадратов отклонений (SST): <strong th:text="${#numbers.formatDecimal(anovaResult.totalSumOfSquares, 1, 2)}"></strong></p>
+            <p>F-значение: <strong th:text="${#numbers.formatDecimal(anovaResult.fValue, 1, 2)}"></strong></p>
+            <p>p-значение:
+                <strong th:text="${#numbers.formatDecimal(anovaResult.pValue, 1, 4)}"
+                        th:class="${anovaResult.significant} ? 'significance' : ''"></strong>
+                <span th:if="${anovaResult.significant}" class="significance">(значимо)</span>
+                <span th:unless="${anovaResult.significant}">(не значимо)</span>
+            </p>
+        </div>
 
 
-
-    <table>
-        <thead>
-        <tr>
-            <th colspan="3">Сводка данных</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td><strong>Методы обучения</strong></td>
-            <td><strong>N</strong></td>
-            <td><strong>Среднее</strong></td>
-<!--            <td><strong>Std. Dev.</strong></td>-->
-<!--            <td><strong>Std. Error</strong></td>-->
-        </tr>
-        <tr th:each="method, stat : ${methodStats}">
-            <td th:text="${method.key}"></td>
-            <td th:text="${method.value.count}"></td>
-            <td th:text="${#numbers.formatDecimal(method.value.mean, 1, 2)}"></td>
-<!--            <td th:text="${#numbers.formatDecimal(method.value.stdDev, 1, 2)}"></td>-->
-<!--            <td th:text="${#numbers.formatDecimal(method.value.stdError, 1, 4)}"></td>-->
-        </tr>
-        <tr class="overall-mean">
-            <td><strong>Общая средняя</strong></td>
-            <td>-</td>
-            <td th:text="${#numbers.formatDecimal(anovaResult.grandMean, 1, 2)}"></td>
-        </tr>
-        </tbody>
-    </table>
-
-    <table class="stats-table">
-        <thead>
-        <tr>
-            <th>Источник вариации</th>
-            <th>Сумма квадратов (SS)</th>
-            <th>Степени свободы (df)</th>
-            <th>Дисперсия</th>
-            <th>F-статистика</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr>
-            <td>Между группами</td>
-            <td th:text="${#numbers.formatDecimal(anovaResult.betweenGroupSumOfSquares, 1, 2)}"></td>
-            <td th:text="${anovaResult.betweenGroupDf}"></td>
-            <td th:text="${#numbers.formatDecimal(anovaResult.betweenGroupMeanSquare, 1, 2)}"></td>
-            <td th:text="${#numbers.formatDecimal(anovaResult.fValue, 1, 2)}"></td>
-        </tr>
-        <tr>
-            <td>Внутри групп</td>
-            <td th:text="${#numbers.formatDecimal(anovaResult.withinGroupSumOfSquares, 1, 2)}"></td>
-            <td th:text="${anovaResult.withinGroupDf}"></td>
-            <td th:text="${#numbers.formatDecimal(anovaResult.withinGroupMeanSquare, 1, 2)}"></td>
-            <td>-</td>
-        </tr>
-        <tr class="highlight">
-            <td>Общая</td>
-            <td th:text="${#numbers.formatDecimal(anovaResult.totalSumOfSquares, 1, 2)}"></td>
-            <td th:text="${anovaResult.totalDf}"></td>
-            <td>-</td>
-            <td>-</td>
-        </tr>
-        </tbody>
-    </table>
-
-    <div class="chart-container">
-        <h3>График сравнений методов обучения</h3>
-        <img th:src="'data:image/png;base64,' + ${chartImage}"
-             alt="ANOVA Comparison Chart" class="img-fluid">
-    </div>
-
-    <div class="table-container">
-        <h3>Post-hoc сравнения (Tukey HSD)</h3>
-        <table class="table table-striped">
+        <table>
             <thead>
             <tr>
-                <th>Метод обучения 1</th>
-                <th>Метод обучения 2</th>
-                <th>Разница средних</th>
-                <th>p-значение</th>
-                <th>Значимость</th>
+                <th colspan="3">Сводка данных</th>
             </tr>
             </thead>
             <tbody>
-            <tr th:each="comparison : ${anovaResult.groupComparisons}">
-                <td th:text="${comparison.group1}"></td>  <!-- No more split operation -->
-                <td th:text="${comparison.group2}"></td>  <!-- No more split operation -->
-                <td th:text="${#numbers.formatDecimal(comparison.meanDifference, 1, 2)}"></td>
-                <td th:text="${#numbers.formatDecimal(comparison.pValue, 1, 4)}"></td>
-                <td th:class="${comparison.isSignificant} ? 'significance' : ''"
-                    th:text="${comparison.isSignificant} ? 'Да' : 'Нет'"></td>
+            <tr>
+                <td><strong>Методы обучения</strong></td>
+                <td><strong>N</strong></td>
+                <td><strong>Среднее</strong></td>
+            </tr>
+            <tr th:each="method, stat : ${methodStats}">
+                <td th:text="${method.key}"></td>
+                <td th:text="${method.value.count}"></td>
+                <td th:text="${#numbers.formatDecimal(method.value.mean, 1, 2)}"></td>
+            </tr>
+            <tr class="overall-mean">
+                <td><strong>Общая средняя</strong></td>
+                <td>-</td>
+                <td th:text="${#numbers.formatDecimal(anovaResult.grandMean, 1, 2)}"></td>
             </tr>
             </tbody>
         </table>
-    </div>
-    <div class="mt-4">
-        <a href="/studentGroup" class="btn btn-secondary">Назад к списку групп</a>
+
+        <table class="stats-table">
+            <thead>
+            <tr>
+                <th>Источник вариации</th>
+                <th>Сумма квадратов (SS)</th>
+                <th>Степени свободы (df)</th>
+                <th>Дисперсия</th>
+                <th>F-статистика</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Между группами</td>
+                <td th:text="${#numbers.formatDecimal(anovaResult.betweenGroupSumOfSquares, 1, 2)}"></td>
+                <td th:text="${anovaResult.betweenGroupDf}"></td>
+                <td th:text="${#numbers.formatDecimal(anovaResult.betweenGroupMeanSquare, 1, 2)}"></td>
+                <td th:text="${#numbers.formatDecimal(anovaResult.fValue, 1, 2)}"></td>
+            </tr>
+            <tr>
+                <td>Внутри групп</td>
+                <td th:text="${#numbers.formatDecimal(anovaResult.withinGroupSumOfSquares, 1, 2)}"></td>
+                <td th:text="${anovaResult.withinGroupDf}"></td>
+                <td th:text="${#numbers.formatDecimal(anovaResult.withinGroupMeanSquare, 1, 2)}"></td>
+                <td>-</td>
+            </tr>
+            <tr class="highlight">
+                <td>Общая</td>
+                <td th:text="${#numbers.formatDecimal(anovaResult.totalSumOfSquares, 1, 2)}"></td>
+                <td th:text="${anovaResult.totalDf}"></td>
+                <td>-</td>
+                <td>-</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="chart-container">
+            <h3>График сравнений методов обучения</h3>
+            <img th:src="'data:image/png;base64,' + ${chartImage}"
+                 alt="ANOVA Comparison Chart" class="img-fluid">
+        </div>
+
+        <div class="table-container">
+            <h3>Post-hoc сравнения (Tukey HSD)</h3>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th>Метод обучения 1</th>
+                    <th>Метод обучения 2</th>
+                    <th>Разница средних</th>
+                    <th>p-значение</th>
+                    <th>Значимость</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="comparison : ${anovaResult.groupComparisons}">
+                    <td th:text="${comparison.group1}"></td>  <!-- No more split operation -->
+                    <td th:text="${comparison.group2}"></td>  <!-- No more split operation -->
+                    <td th:text="${#numbers.formatDecimal(comparison.meanDifference, 1, 2)}"></td>
+                    <td th:text="${#numbers.formatDecimal(comparison.pValue, 1, 4)}"></td>
+                    <td th:class="${comparison.isSignificant} ? 'significance' : ''"
+                        th:text="${comparison.isSignificant} ? 'Да' : 'Нет'"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="mt-4">
+            <a href="/studentGroup" class="btn btn-secondary">Назад к списку групп</a>
+        </div>
     </div>
 </div>
-
-<div th:insert="~{blocks/footer :: footer}"></div>
+<footer class="footer bg-light text-center">
+    <div th:insert="~{blocks/footer :: footer}"></div>
+</footer>
 </body>
 </html>

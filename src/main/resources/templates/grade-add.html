@@ -4,33 +4,57 @@
     <meta charset="UTF-8">
     <title>Добавить оценку</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        html, body {
+            height: 100%;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .content {
+            flex: 1 0 auto;
+            padding-bottom: 60px; /* Отступ для футера */
+        }
+        .footer {
+            flex-shrink: 0;
+            width: 100%;
+            height: 60px; /* Высота футера */
+            line-height: 60px; /* Центрирование текста по вертикали */
+        }
+    </style>
 </head>
 <body>
-<div th:insert="~{blocks/header :: header}"></div>
+<div class="content">
+    <div th:insert="~{blocks/header :: header}"></div>
 
-<div class="container py-4">
-    <h1 class="mb-4" th:text="'Добавить оценку для: ' + ${student.fullName}"></h1>
+    <div class="container py-4">
+        <h1 class="mb-4" th:text="'Добавить оценку для: ' + ${student.fullName}"></h1>
 
-    <form th:action="@{/student/{studentId}/grades/add(studentId=${student.idStudent})}"
-          th:object="${grade}" method="post">
-        <div class="mb-3">
-            <label for="testName" class="form-label">Название теста</label>
-            <input type="text" class="form-control" id="testName" th:field="*{testName}" required>
-        </div>
-        <div class="mb-3">
-            <label for="valueScore" class="form-label">Оценка</label>
-            <input type="text" class="form-control" id="valueScore" th:field="*{valueScore}" required>
-        </div>
-        <div class="mb-3">
-            <label for="testDate" class="form-label">Дата</label>
-            <input type="date" class="form-control" id="testDate" th:field="*{testDate}" required>
-        </div>
-        <button type="submit" class="btn btn-primary">Добавить</button>
-        <a th:href="@{'/student/' + ${student.idStudent} + '/grades'}" class="btn btn-secondary">Отмена</a>
-    </form>
+        <form th:action="@{/student/{studentId}/grades/add(studentId=${student.idStudent})}"
+              th:object="${grade}" method="post">
+            <div class="mb-3">
+                <label for="testName" class="form-label">Название теста</label>
+                <input type="text" class="form-control" id="testName" th:field="*{testName}" required>
+            </div>
+            <div class="mb-3">
+                <label for="valueScore" class="form-label">Оценка</label>
+                <input type="text" class="form-control" id="valueScore" th:field="*{valueScore}" required>
+            </div>
+            <div class="mb-3">
+                <label for="testDate" class="form-label">Дата</label>
+                <input type="date" class="form-control" id="testDate" th:field="*{testDate}" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Добавить</button>
+            <a th:href="@{'/student/' + ${student.idStudent} + '/grades'}" class="btn btn-secondary">Отмена</a>
+        </form>
+    </div>
 </div>
 
-<div th:insert="~{blocks/footer :: footer}"></div>
+<footer class="footer bg-light text-center">
+    <div th:insert="~{blocks/footer :: footer}"></div>
+</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

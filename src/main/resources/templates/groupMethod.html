@@ -29,54 +29,74 @@
             align-items: center;
             justify-content: center;
         }
+        html, body {
+            height: 100%;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        .content {
+            flex: 1 0 auto;
+            padding-bottom: 60px; /* Отступ для футера */
+        }
+        .footer {
+            flex-shrink: 0;
+            width: 100%;
+            height: 60px; /* Высота футера */
+            line-height: 60px; /* Центрирование текста по вертикали */
+        }
     </style>
 </head>
 <body>
 <div th:insert="~{blocks/header :: header}"></div>
 
-<div class="container py-4">
-    <!-- Заголовок с информацией о методе обучения -->
-    <div class="method-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <h1>
-                <span th:text="'Группы с методом обучения: ' + ${teachingMethod.nameMethod}"></span>
-            </h1>
-            <a th:href="@{/teachingMethod}" class="btn btn-outline-secondary">Назад к методам</a>
-        </div>
-    </div>
-
-    <!-- Список групп -->
-    <div class="row">
-        <div th:each="studentGroup : ${studentGroups}" class="col-md-6">
-            <div class="card group-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <div>
-                            <h5 th:text="${studentGroup.nameGroup}"></h5>
-                            <span class="text-muted">Количество студентов: </span>
-                            <span class="badge bg-primary student-count-badge"
-                                  th:text="${studentGroup.students.size()}"></span>
-                        </div>
-                        <a th:href="@{'/student/studentGroup/' + ${studentGroup.idStudentGroup}}"
-                           class="btn btn-sm btn-outline-primary">Просмотр студентов</a>
-                    </div>
-                </div>
+<div class="content">
+    <div class="container py-4">
+        <!-- Заголовок с информацией о методе обучения -->
+        <div class="method-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1>
+                    <span th:text="'Группы с методом обучения: ' + ${teachingMethod.nameMethod}"></span>
+                </h1>
+                <a th:href="@{/teachingMethod}" class="btn btn-outline-secondary">Назад к методам</a>
             </div>
         </div>
 
-        <!-- Сообщение если групп нет -->
-        <div th:if="${groups.empty}" class="col-12">
-            <div class="card empty-groups">
-                <div class="card-body text-center">
-                    <h5 class="card-title">Группы не найдены</h5>
-                    <p class="text-muted">Нет групп, использующих этот метод обучения</p>
+        <!-- Список групп -->
+        <div class="row">
+            <div th:each="studentGroup : ${studentGroups}" class="col-md-6">
+                <div class="card group-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 th:text="${studentGroup.nameGroup}"></h5>
+                                <span class="text-muted">Количество студентов: </span>
+                                <span class="badge bg-primary student-count-badge"
+                                      th:text="${studentGroup.students.size()}"></span>
+                            </div>
+                            <a th:href="@{'/student/studentGroup/' + ${studentGroup.idStudentGroup}}"
+                               class="btn btn-sm btn-outline-primary">Просмотр студентов</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Сообщение если групп нет -->
+            <div th:if="${groups.empty}" class="col-12">
+                <div class="card empty-groups">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">Группы не найдены</h5>
+                        <p class="text-muted">Нет групп, использующих этот метод обучения</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<div th:insert="~{blocks/footer :: footer}"></div>
+<footer class="footer bg-light text-center">
+    <div th:insert="~{blocks/footer :: footer}"></div>
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
