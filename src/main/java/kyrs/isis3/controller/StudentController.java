@@ -23,12 +23,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.LinkedHashSet;
+import java.util.*;
 
 import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -347,60 +344,102 @@ public class StudentController {
             AtomicInteger studentCount = new AtomicInteger();
             AtomicInteger gradeUpdatedCount = new AtomicInteger(0);
             AtomicInteger gradeCount = new AtomicInteger(0);
+            List<String> validationErrors = new ArrayList<>();
 
             while ((line = reader.readLine()) != null) {
-                String[] data = line.split(",(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)"); // Правильное разделение с учетом кавычек
+                try {
+                    String[] data = line.split(",");
 
-                if (data.length != 6) {
-                    continue; // Пропускаем некорректные строки
+                    if (data.length != 6) {
+                        validationErrors.add("Некорректное количество полей в строке: " + line);
+                        continue;
+                    }
+
+                    // Валидация ФИО (только буквы, пробелы и дефисы)
+                    String fullName = data[0].trim().replaceAll("^\"|\"$", "");
+                    if (!fullName.matches("^[\\p{L} -]+$")) {
+                        validationErrors.add("Некорректное ФИО: " + fullName);
+                        continue;
+                    }
+
+                    String groupName = data[1].trim().replaceAll("^\"|\"$", "");
+
+                    // Валидация метода обучения
+                    String methodName = data[2].trim().replaceAll("^\"|\"$", "");
+//                    if (!methodName.matches("Онлайн-курсы|Очное обучение|Смешанное обучение")) {
+//                        validationErrors.add("Некорректный метод обучения: " + methodName);
+//                        continue;
+//                    }
+
+                    // Валидация оценки (только 2, 3, 4 или 5)
+                    String scoreStr = data[3].trim().replaceAll("^\"|\"$", "");
+                    if (!scoreStr.matches("[2-5]")) {
+                        validationErrors.add("Некорректная оценка: " + scoreStr);
+                        continue;
+                    }
+                    double score = Double.parseDouble(scoreStr);
+
+                    // Валидация даты (только цифры и разделители - или .)
+                    String dateStr = data[4].trim().replaceAll("^\"|\"$", "");
+                    if (!dateStr.matches("^\\d{4}[-.]\\d{2}[-.]\\d{2}$")) {
+                        validationErrors.add("Некорректный формат даты: " + dateStr);
+                        continue;
+                    }
+                    // Заменяем точки на дефисы для парсинга
+                    dateStr = dateStr.replace('.', '-');
+                    LocalDate testDate = LocalDate.parse(dateStr);
+
+                    String testName = data[5].trim().replaceAll("^\"|\"$", "");
+
+                    // Поиск метода обучения
+                    TeachingMethod method = teachingMethodRepository.findByNameMethod(methodName)
+                            .orElseGet(() -> {
+                                TeachingMethod newMethod = new TeachingMethod(methodName);
+                                return teachingMethodRepository.save(newMethod);
+                            });
+
+                    // Поиск или создание группы
+                    StudentGroup group = studentGroupRepository.findByNameGroup(groupName)
+                            .orElseGet(() -> {
+                                StudentGroup newGroup = new StudentGroup(groupName, method);
+                                return studentGroupRepository.save(newGroup);
+                            });
+
+                    // Поиск или создание студента
+                    Student student = studentRepository.findByFullNameAndStudentGroup(fullName, group)
+                            .orElseGet(() -> {
+                                Student newStudent = new Student(fullName, group);
+                                studentRepository.save(newStudent);
+                                studentCount.getAndIncrement();
+                                return newStudent;
+                            });
+
+                    // Обработка оценки
+                    Optional<Grade> existingGrade = gradeRepository.findByStudentAndTestNameAndTestDate(
+                            student, testName, testDate);
+
+                    if (existingGrade.isPresent()) {
+                        Grade grade = existingGrade.get();
+                        grade.setValueScore(String.valueOf(score));
+                        gradeRepository.save(grade);
+                        gradeUpdatedCount.incrementAndGet();
+                    } else {
+                        Grade grade = new Grade();
+                        grade.setStudent(student);
+                        grade.setValueScore(String.valueOf(score));
+                        grade.setTestDate(testDate);
+                        grade.setTestName(testName);
+                        gradeRepository.save(grade);
+                        gradeCount.incrementAndGet();
+                    }
+
+                } catch (Exception e) {
+                    validationErrors.add("Ошибка обработки строки: " + line + " - " + e.getMessage());
                 }
+            }
 
-                // Очищаем каждое поле от кавычек и лишних пробелов
-                String fullName = data[0].trim().replaceAll("^\"|\"$", "");
-                String groupName = data[1].trim().replaceAll("^\"|\"$", "");
-                String methodName = data[2].trim().replaceAll("^\"|\"$", "");
-                double score = Double.parseDouble(data[3].trim().replaceAll("^\"|\"$", ""));
-                LocalDate testDate = LocalDate.parse(data[4].trim().replaceAll("^\"|\"$", ""));
-                String testName = data[5].trim().replaceAll("^\"|\"$", "");
-
-                // Остальной код без изменений
-                TeachingMethod method = teachingMethodRepository.findByNameMethod(methodName)
-                        .orElseGet(() -> {
-                            TeachingMethod newMethod = new TeachingMethod(methodName);
-                            return teachingMethodRepository.save(newMethod);
-                        });
-
-                StudentGroup group = studentGroupRepository.findByNameGroup(groupName)
-                        .orElseGet(() -> {
-                            StudentGroup newGroup = new StudentGroup(groupName, method);
-                            return studentGroupRepository.save(newGroup);
-                        });
-
-                Student student = studentRepository.findByFullNameAndStudentGroup(fullName, group)
-                        .orElseGet(() -> {
-                            Student newStudent = new Student(fullName, group);
-                            studentRepository.save(newStudent);
-                            studentCount.getAndIncrement();
-                            return newStudent;
-                        });
-
-                Optional<Grade> existingGrade = gradeRepository.findByStudentAndTestNameAndTestDate(
-                        student, testName, testDate);
-
-                if (existingGrade.isPresent()) {
-                    Grade grade = existingGrade.get();
-                    grade.setValueScore(String.valueOf(score));
-                    gradeRepository.save(grade);
-                    gradeUpdatedCount.incrementAndGet();
-                } else {
-                    Grade grade = new Grade();
-                    grade.setStudent(student);
-                    grade.setValueScore(String.valueOf(score));
-                    grade.setTestDate(testDate);
-                    grade.setTestName(testName);
-                    gradeRepository.save(grade);
-                    gradeCount.incrementAndGet();
-                }
+            if (!validationErrors.isEmpty()) {
+                redirectAttributes.addFlashAttribute("validationErrors", validationErrors);
             }
 
             redirectAttributes.addFlashAttribute("success",
