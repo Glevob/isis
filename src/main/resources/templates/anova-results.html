@@ -275,6 +275,31 @@
                             <span th:if="${anovaResult.significant}">Различия между группами <strong>статистически значимы</strong> (p < 0.05)</span>
                             <span th:unless="${anovaResult.significant}">Различия между группами <strong>не статистически значимы</strong> (p ≥ 0.05)</span>
                         </div>
+
+                        <!-- Добавляем новую метрику для F-критического -->
+                        <div class="metric-card">
+                            <i class="bi bi-clipboard-data metric-icon"></i>
+                            <div class="metric-label">Критическое F (α = <span th:text="${anovaResult.alpha}"></span>)</div>
+                            <div class="metric-value" th:text="${#numbers.formatDecimal(anovaResult.fCritical, 1, 4)}"></div>
+                        </div>
+
+                        <!-- Добавляем сравнение F-значения с F-критическим -->
+                        <div class="metric-card" th:class="${anovaResult.fValue > anovaResult.fCritical} ? 'stat-significant' : ''">
+                            <i class="bi bi-arrow-left-right metric-icon"></i>
+                            <div class="metric-label">F-значение vs F-критическое</div>
+                            <div class="metric-value">
+                                <span th:text="${#numbers.formatDecimal(anovaResult.fValue, 1, 4)}"></span> vs
+                                <span th:text="${#numbers.formatDecimal(anovaResult.fCritical, 1, 4)}"></span>
+                            </div>
+                            <!-- Пояснение к сравнению -->
+                            <div class="metric-comment" th:if="${anovaResult.fValue > anovaResult.fCritical}">
+                                F-значение > F-критическое → нулевая гипотеза отвергается (есть статистически значимые различия)
+                            </div>
+                            <div class="metric-comment" th:unless="${anovaResult.fValue > anovaResult.fCritical}">
+                                F-значение ≤ F-критическое → нет оснований отвергать нулевую гипотезу (значимых различий не обнаружено)
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>

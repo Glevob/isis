@@ -62,7 +62,7 @@ public class StatisticsService {
         double betweenGroupSumOfSquares = methodsWithGrades.entrySet().stream()
                 .mapToDouble(e -> e.getValue().size() * Math.pow(
                         groupMeans.get(e.getKey()) - grandMean, 2)) // Используем предвычисленные средние
-                .sum();
+                .sum(); ////////////////
 
         // Вычисление суммы квадратов внутри групп (SSW)
         double withinGroupSumOfSquares = methodsWithGrades.entrySet().stream()
@@ -94,13 +94,20 @@ public class StatisticsService {
                 new ArrayList<>(methodsWithGrades.values()),
                 methodNames);
 
+        // Вычисление критического значения F
+        double alpha = 0.05; // или получать из параметров
+        FDistribution fDist = new FDistribution(betweenGroupDf, withinGroupDf);
+        double fCritical = fDist.inverseCumulativeProbability(1 - alpha);
+
         return new AnovaResultDto(
-                fValue, pValue, pValue < 0.05,
+                fValue, pValue, pValue < alpha,
                 grandMean, totalSumOfSquares,
                 betweenGroupSumOfSquares, withinGroupSumOfSquares,
                 betweenGroupDf, withinGroupDf, totalDf,
                 betweenGroupMeanSquare, withinGroupMeanSquare,
-                comparisons);
+                comparisons,
+                fCritical, alpha  // Добавляем новые параметры
+        );
     }
 
     private Map<TeachingMethod, List<Double>> getTeachingMethodsWithGrades() {
@@ -144,20 +151,20 @@ public class StatisticsService {
         return Math.sqrt(variance);
     }
 
-    private Map<StudentGroup, List<Double>> getStudentGroupsWithGrades() {
-        List<StudentGroup> studentGroups = studentGroupRepository.findAll();
-        Map<StudentGroup, List<Double>> result = new HashMap<>();
-
-        studentGroups.forEach(studentGroup -> {
-            List<Double> grades = gradeRepository.findByStudentStudentGroupIdStudentGroup(studentGroup.getIdStudentGroup())
-                    .stream()
-                    .map(grade -> Double.parseDouble(grade.getValueScore()))
-                    .collect(Collectors.toList());
-            result.put(studentGroup, grades);
-        });
-
-        return result;
-    }
+//    private Map<StudentGroup, List<Double>> getStudentGroupsWithGrades() {
+//        List<StudentGroup> studentGroups = studentGroupRepository.findAll();
+//        Map<StudentGroup, List<Double>> result = new HashMap<>();
+//
+//        studentGroups.forEach(studentGroup -> {
+//            List<Double> grades = gradeRepository.findByStudentStudentGroupIdStudentGroup(studentGroup.getIdStudentGroup())
+//                    .stream()
+//                    .map(grade -> Double.parseDouble(grade.getValueScore()))
+//                    .collect(Collectors.toList());
+//            result.put(studentGroup, grades);
+//        });
+//
+//        return result;
+//    }
 
     private List<GroupComparisonDto> performTukeyHSD(List<List<Double>> samples,
                                                      List<String> groupNames) {

@@ -21,6 +21,8 @@ public class AnovaResultDto {
     private double betweenGroupMeanSquare;
     private double withinGroupMeanSquare;
     private List<GroupComparisonDto> groupComparisons;
+    private double fCritical;  // Критическое значение F-распределения
+    private double alpha;      // Уровень значимости
 
     public AnovaResultDto(double fValue, double pValue, boolean significant, List<GroupComparisonDto> groupComparisons) {
         this.fValue = fValue;
@@ -37,7 +39,7 @@ public class AnovaResultDto {
                           double totalSumOfSquares, double betweenGroupSumOfSquares,
                           double withinGroupSumOfSquares, int betweenGroupDf, int withinGroupDf,
                           int totalDf, double betweenGroupMeanSquare, double withinGroupMeanSquare,
-                          List<GroupComparisonDto> comparisons) {
+                          List<GroupComparisonDto> comparisons, double fCritical, double alpha) {
         this.fValue = fValue;
         this.pValue = pValue;
         this.significant = significant;
@@ -51,6 +53,8 @@ public class AnovaResultDto {
         this.betweenGroupMeanSquare = betweenGroupMeanSquare;
         this.withinGroupMeanSquare = withinGroupMeanSquare;
         this.groupComparisons = comparisons;
+        this.fCritical = fCritical;
+        this.alpha = alpha;
 
     }
     // getters, setters, constructor
