@@ -21,7 +21,7 @@ public class MainController {
         return "regist";
 
     }
-    @GetMapping("/")
+    @GetMapping("/anon")
     public String anon(Model model){
         return "anon";
 
