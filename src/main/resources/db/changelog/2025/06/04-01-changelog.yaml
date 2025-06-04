@@ -1,0 +1,238 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1749062024026-1
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createSequence:
+            incrementBy: 1
+            sequenceName: id_grade_seq
+            startValue: 1
+  - changeSet:
+      id: 1749062024026-2
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createSequence:
+            incrementBy: 1
+            sequenceName: id_student_group_seq
+            startValue: 1
+  - changeSet:
+      id: 1749062024026-3
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createSequence:
+            incrementBy: 1
+            sequenceName: id_student_seq
+            startValue: 1
+  - changeSet:
+      id: 1749062024026-4
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createSequence:
+            incrementBy: 1
+            sequenceName: id_teaching_method_seq
+            startValue: 1
+  - changeSet:
+      id: 1749062024026-5
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createSequence:
+            incrementBy: 1
+            sequenceName: id_user_role_seq
+            startValue: 1
+  - changeSet:
+      id: 1749062024026-6
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createSequence:
+            incrementBy: 1
+            sequenceName: id_user_seq
+            startValue: 1
+  - changeSet:
+      id: 1749062024026-7
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_grade
+                  name: id_grade
+                  type: BIGINT
+              - column:
+                  name: value_score
+                  type: VARCHAR(255)
+              - column:
+                  name: id_student
+                  type: BIGINT
+              - column:
+                  name: test_date
+                  type: DATE
+              - column:
+                  name: test_name
+                  type: VARCHAR(255)
+            tableName: grade
+  - changeSet:
+      id: 1749062024026-8
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_student
+                  name: id_student
+                  type: BIGINT
+              - column:
+                  name: full_name
+                  type: VARCHAR(255)
+              - column:
+                  name: id_student_group
+                  type: BIGINT
+            tableName: student
+  - changeSet:
+      id: 1749062024026-9
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_student_group
+                  name: id_student_group
+                  type: BIGINT
+              - column:
+                  name: name_group
+                  type: VARCHAR(255)
+              - column:
+                  name: id_teaching_method
+                  type: BIGINT
+            tableName: student_group
+  - changeSet:
+      id: 1749062024026-10
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_teaching_method
+                  name: id_teaching_method
+                  type: BIGINT
+              - column:
+                  name: name_method
+                  type: VARCHAR(255)
+            tableName: teaching_method
+  - changeSet:
+      id: 1749062024026-11
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_user_roles
+                  name: id_user_role
+                  type: BIGINT
+              - column:
+                  name: user_authority
+                  type: SMALLINT
+              - column:
+                  name: id_user
+                  type: BIGINT
+            tableName: user_roles
+  - changeSet:
+      id: 1749062024026-12
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_users
+                  name: id_user
+                  type: BIGINT
+              - column:
+                  name: login
+                  type: VARCHAR(255)
+              - column:
+                  name: password
+                  type: VARCHAR(255)
+              - column:
+                  name: surname
+                  type: VARCHAR(255)
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  name: middle_name
+                  type: VARCHAR(255)
+            tableName: users
+  - changeSet:
+      id: 1749062024026-13
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: id_student
+            baseTableName: grade
+            constraintName: FK_GRADE_ON_ID_STUDENT
+            referencedColumnNames: id_student
+            referencedTableName: student
+  - changeSet:
+      id: 1749062024026-14
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: id_teaching_method
+            baseTableName: student_group
+            constraintName: FK_STUDENT_GROUP_ON_ID_TEACHING_METHOD
+            referencedColumnNames: id_teaching_method
+            referencedTableName: teaching_method
+  - changeSet:
+      id: 1749062024026-15
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: id_student_group
+            baseTableName: student
+            constraintName: FK_STUDENT_ON_ID_STUDENT_GROUP
+            referencedColumnNames: id_student_group
+            referencedTableName: student_group
+  - changeSet:
+      id: 1749062024026-16
+      author: ??? (generated)
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: id_user
+            baseTableName: user_roles
+            constraintName: FK_USER_ROLES_ON_ID_USER
+            referencedColumnNames: id_user
+            referencedTableName: users
+

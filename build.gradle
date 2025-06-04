@@ -35,6 +35,13 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.liquibase:liquibase-core'
 
+
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+
+	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+
+	testImplementation 'org.springframework.security:spring-security-test'
+
 	// Статистический анализ
 	implementation 'org.apache.commons:commons-math3:3.6.1'  // ANOVA и другие статистические тесты
 	// Визуализация данных
