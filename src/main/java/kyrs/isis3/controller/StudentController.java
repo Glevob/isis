@@ -74,7 +74,7 @@ public class StudentController {
         TeachingMethod teachingMethod = teachingMethodRepository.findById(teachingMethodId).orElseThrow();
         StudentGroup studentGroup = new StudentGroup(nameGroup, teachingMethod);
         studentGroupRepository.save(studentGroup);
-        return "redirect:/student";
+        return "redirect:/studentGroup";
     }
 
     // Страница со списком всех групп
@@ -112,7 +112,7 @@ public class StudentController {
     public String addTeachingMethod (@RequestParam String nameMethod , Model model) {
         TeachingMethod teachingMethod = new TeachingMethod(nameMethod);
         teachingMethodRepository.save(teachingMethod);
-        return "redirect:/";
+        return "redirect:/teachingMethod";
     }
 
     @PostMapping("/student/add")
@@ -155,8 +155,15 @@ public class StudentController {
     @Transactional
     @PostMapping("/student/{id}/delete")
     public String studentDelete(@PathVariable(value = "id") long idStudent) {
-        Student student = studentRepository.findById(idStudent).orElseThrow();
+        Student student = studentRepository.findById(idStudent)
+                .orElseThrow(() -> new IllegalArgumentException("Студент не найден"));
+
+        // Удаляем все оценки студента
+        gradeRepository.deleteByStudent(student);
+
+        // Удаляем самого студента
         studentRepository.delete(student);
+
         return "redirect:/student";
     }
 

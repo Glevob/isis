@@ -4,48 +4,128 @@
     <title>Добавление студента</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <style>
+        :root {
+            --primary-color: #4e73df;
+            --secondary-color: #f8f9fc;
+            --accent-color: #2e59d9;
+        }
+
         html, body {
             height: 100%;
+            background-color: var(--secondary-color);
         }
+
         body {
             display: flex;
             flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
+
         .content {
             flex: 1 0 auto;
-            padding-bottom: 60px; /* Отступ для футера */
+            padding-bottom: 60px;
         }
+
         .footer {
             flex-shrink: 0;
             width: 100%;
-            height: 60px; /* Высота футера */
-            line-height: 60px; /* Центрирование текста по вертикали */
+            height: 60px;
+            line-height: 60px;
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .card {
+            border: none;
+            border-radius: 0.35rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+        }
+
+        .card-header {
+            background-color: var(--primary-color);
+            color: white;
+            border-bottom: none;
+            font-weight: 600;
+            padding: 1rem 1.35rem;
+            border-radius: 0.35rem 0.35rem 0 0 !important;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
         }
     </style>
 </head>
 <body>
 <div th:insert="~{blocks/header :: header}"></div>
+
 <div class="content">
-    <div style="padding-top: 60px;" class="container mt-5">
-        <h1>Добавление студента</h1>
-        <form action="/student/add" method="post" enctype="multipart/form-data">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-person-plus me-2"></i>Добавление нового студента</span>
+                        <a href="/student" class="btn btn-sm btn-light">
+                            <i class="bi bi-arrow-left me-1"></i>Назад
+                        </a>
+                    </div>
 
-            <input type="text" name="fullName" placeholder="Введите ФИО студента" class="form-control" required><br>
+                    <div class="card-body p-4">
+                        <form action="/student/add" method="post" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="fullName" class="form-label">ФИО студента</label>
+                                <input type="text" id="fullName" name="fullName"
+                                       class="form-control form-control-lg"
+                                       placeholder="Иванов Иван Иванович" required>
+                            </div>
 
-            <label for="studentGroups">Выберите группу:</label>
-            <select name="studentGroupId" id="studentGroups" class="form-control" required>
-                <option th:each="studentGroup : ${studentGroups}" th:value="${studentGroup.idStudentGroup}"
-                        th:text="${studentGroup.nameGroup}"></option>
-            </select><br>
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='/studentGroup/add'">Добавить групуп</button><br><br>
+                            <div class="mb-4">
+                                <label for="studentGroups" class="form-label">Группа</label>
+                                <select name="studentGroupId" id="studentGroups"
+                                        class="form-select form-select-lg" required>
+                                    <option value="" selected disabled>Выберите группу</option>
+                                    <option th:each="studentGroup : ${studentGroups}"
+                                            th:value="${studentGroup.idStudentGroup}"
+                                            th:text="${studentGroup.nameGroup} + '. ' + ${studentGroup.teachingMethod.nameMethod}">
+                                    </option>
+                                </select>
+                                <div class="mt-2">
+                                    <a href="/studentGroup/add" class="btn btn-outline-secondary">
+                                        <i class="bi bi-plus-circle me-1"></i>Добавить новую группу
+                                    </a>
+                                </div>
+                            </div>
 
-            <button type="submit" class="btn btn-success">Добавить студента</button>
-        </form>
-     </div>
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="bi bi-save me-1"></i>Сохранить студента
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<footer class="footer bg-light text-center">
+
+<footer class="footer">
     <div th:insert="~{blocks/footer :: footer}"></div>
 </footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

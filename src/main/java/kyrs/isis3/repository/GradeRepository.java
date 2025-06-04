@@ -1,5 +1,6 @@
 package kyrs.isis3.repository;
 
+import jakarta.transaction.Transactional;
 import kyrs.isis3.model.Grade;
 import kyrs.isis3.model.Student;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -31,4 +32,9 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
 
     @Query("SELECT g FROM Grade g WHERE g.student.studentGroup.teachingMethod.idTeachingMethod = :teachingMethodId")
     List<Grade> findByTeachingMethodId(@Param("teachingMethodId") Long teachingMethodId);
+
+    @Transactional
+    @Modifying
+    @Query("DELETE FROM Grade g WHERE g.student = :student")
+    void deleteByStudent(@Param("student") Student student);
 }
