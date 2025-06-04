@@ -151,21 +151,6 @@ public class StatisticsService {
         return Math.sqrt(variance);
     }
 
-//    private Map<StudentGroup, List<Double>> getStudentGroupsWithGrades() {
-//        List<StudentGroup> studentGroups = studentGroupRepository.findAll();
-//        Map<StudentGroup, List<Double>> result = new HashMap<>();
-//
-//        studentGroups.forEach(studentGroup -> {
-//            List<Double> grades = gradeRepository.findByStudentStudentGroupIdStudentGroup(studentGroup.getIdStudentGroup())
-//                    .stream()
-//                    .map(grade -> Double.parseDouble(grade.getValueScore()))
-//                    .collect(Collectors.toList());
-//            result.put(studentGroup, grades);
-//        });
-//
-//        return result;
-//    }
-
     private List<GroupComparisonDto> performTukeyHSD(List<List<Double>> samples,
                                                      List<String> groupNames) {
         // Вычисляем необходимые параметры для теста Тьюки
@@ -188,32 +173,21 @@ public class StatisticsService {
                 String secondGroup = mean1 > mean2 ? groupNames.get(j) : groupNames.get(i);
 
                 // Вычисляем стандартную ошибку разницы
-                double se = Math.sqrt(mse * (1.0/samples.get(i).size() + 1.0/samples.get(j).size()));
+                double se = Math.sqrt(mse * 0.5 * (1.0/samples.get(i).size() + 1.0/samples.get(j).size()));
 
-                // Вычисляем критическое значение (HSD)
-                double hsd = qCritical * se;
+                // Вычисляем q-значение
+                double qValue = diff / se;
 
                 // Определяем значимость
-                boolean significant = diff > hsd;
-
-                // Упрощенное вычисление p-value
-                double pValue;
-                if (significant) {
-                    pValue = 0.001; // Значимое различие
-                } else {
-                    // Аппроксимация p-value на основе расстояния до критического значения
-                    double ratio = diff / hsd;
-                    pValue = 1.0 - ratio * 0.8; // Эвристическая формула
-                    if (pValue < 0.05) pValue = 0.05;
-                }
+                boolean significant = qValue > qCritical;
 
                 comparisons.add(new GroupComparisonDto(
                         firstGroup,
                         secondGroup,
-                        diff,
-                        pValue,
+                        se, // Теперь выводим стандартную ошибку вместо разницы средних
+                        qValue, // Теперь выводим q-значение вместо p-значения
                         significant,
-                        hsd // Критическое значение HSD
+                        qCritical // Критическое значение q
                 ));
             }
         }
@@ -299,12 +273,12 @@ public class StatisticsService {
                 .map(comp -> comp.getGroup1() + "-" + comp.getGroup2())
                 .collect(Collectors.toList());
 
-        List<Double> differences = comparisons.stream()
-                .map(GroupComparisonDto::getMeanDifference)
+        List<Double> standardErrors = comparisons.stream()
+                .map(GroupComparisonDto::getStandardError)
                 .collect(Collectors.toList());
 
         List<Double> criticalValues = comparisons.stream()
-                .map(GroupComparisonDto::getCriticalValue)
+                .map(comp -> comp.getCriticalValue() * comp.getStandardError())
                 .collect(Collectors.toList());
 
         // Создаем график
@@ -313,21 +287,21 @@ public class StatisticsService {
                 .height(600)
                 .title("Сравнение методов обучения (Tukey HSD)")
                 .xAxisTitle("Парные сравнения")
-                .yAxisTitle("Разница средних")
+                .yAxisTitle("Стандартная ошибка (SE)")
                 .build();
 
         // Добавляем столбцы с критическими значениями (фоном)
-        chart.addSeries("Critical value", comparisonLabels, criticalValues)
+        chart.addSeries("Critical SE", comparisonLabels, criticalValues)
                 .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar);
 
-        // Добавляем столбцы с разницами (передним планом)
-        chart.addSeries("Difference", comparisonLabels, differences)
+        // Добавляем столбцы со стандартными ошибками (передним планом)
+        chart.addSeries("Standard Error", comparisonLabels, standardErrors)
                 .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar);
 
         // Настраиваем цвета и прозрачность
         chart.getStyler().setSeriesColors(new Color[]{
                 new Color(220, 20, 60, 100),  // Critical value - crimson с прозрачностью
-                new Color(70, 130, 180)       // Difference - steel blue
+                new Color(70, 130, 180)       // Standard Error - steel blue
         });
 
         // Добавляем горизонтальную линию для нуля
