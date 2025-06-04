@@ -184,6 +184,25 @@
             <div class="col-12">
                 <h1 class="header-title">Результаты дисперсионного анализа (ANOVA)</h1>
                 <h5 class="subtitle">Влияет ли метод обучения на успеваемость студентов?</h5>
+
+                <!-- Добавляем форму для выбора уровня значимости -->
+                <div class="alpha-selector mb-3">
+                    <form method="get" action="/statistics/anova" class="row g-3 align-items-center">
+                        <div class="col-auto">
+                            <label for="alpha" class="col-form-label">Уровень значимости (α):</label>
+                        </div>
+                        <div class="col-auto">
+                            <select name="alpha" id="alpha" class="form-select" onchange="this.form.submit()">
+                                <option value="0.01" th:selected="${selectedAlpha == 0.01}">0.01 (1%)</option>
+                                <option value="0.05" th:selected="${selectedAlpha == 0.05}">0.05 (5%)</option>
+                                <option value="0.10" th:selected="${selectedAlpha == 0.10}">0.10 (10%)</option>
+                            </select>
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-sm btn-primary">Применить</button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
 
@@ -272,18 +291,16 @@
 
                         <div class="alert mt-3" th:class="${anovaResult.significant} ? 'alert-success' : 'alert-warning'">
                             <i class="bi me-2" th:class="${anovaResult.significant} ? 'bi-check-circle' : 'bi-exclamation-circle'"></i>
-                            <span th:if="${anovaResult.significant}">Различия между группами <strong>статистически значимы</strong> (p < 0.05)</span>
-                            <span th:unless="${anovaResult.significant}">Различия между группами <strong>не статистически значимы</strong> (p ≥ 0.05)</span>
+                            <span th:if="${anovaResult.significant}">Различия между группами <strong>статистически значимы</strong> (p < <span th:text="${selectedAlpha}"></span>)</span>
+                            <span th:unless="${anovaResult.significant}">Различия между группами <strong>не статистически значимы</strong> (p ≥ <span th:text="${selectedAlpha}"></span>)</span>
                         </div>
 
-                        <!-- Добавляем новую метрику для F-критического -->
                         <div class="metric-card">
                             <i class="bi bi-clipboard-data metric-icon"></i>
-                            <div class="metric-label">Критическое F (α = <span th:text="${anovaResult.alpha}"></span>)</div>
+                            <div class="metric-label">Критическое F (α = <span th:text="${selectedAlpha}"></span>)</div>
                             <div class="metric-value" th:text="${#numbers.formatDecimal(anovaResult.fCritical, 1, 4)}"></div>
                         </div>
 
-                        <!-- Добавляем сравнение F-значения с F-критическим -->
                         <div class="metric-card" th:class="${anovaResult.fValue > anovaResult.fCritical} ? 'stat-significant' : ''">
                             <i class="bi bi-arrow-left-right metric-icon"></i>
                             <div class="metric-label">F-значение vs F-критическое</div>
@@ -291,7 +308,6 @@
                                 <span th:text="${#numbers.formatDecimal(anovaResult.fValue, 1, 4)}"></span> vs
                                 <span th:text="${#numbers.formatDecimal(anovaResult.fCritical, 1, 4)}"></span>
                             </div>
-                            <!-- Пояснение к сравнению -->
                             <div class="metric-comment" th:if="${anovaResult.fValue > anovaResult.fCritical}">
                                 F-значение > F-критическое → нулевая гипотеза отвергается (есть статистически значимые различия)
                             </div>
@@ -299,7 +315,6 @@
                                 F-значение ≤ F-критическое → нет оснований отвергать нулевую гипотезу (значимых различий не обнаружено)
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -359,7 +374,7 @@
                 <div class="chart-container">
                     <h3 class="chart-title">
                         <i class="bi bi-bar-chart-line me-2"></i>
-                        Сравнение методов обучения
+                        Сравнение методов обучения (α = <span th:text="${selectedAlpha}"></span>)
                     </h3>
                     <img th:src="'data:image/png;base64,' + ${chartImage}"
                          alt="ANOVA Comparison Chart" class="img-fluid rounded">
@@ -372,7 +387,7 @@
                 <div class="card">
                     <div class="card-header d-flex align-items-center">
                         <i class="bi bi-arrow-down-up me-2"></i>
-                        <span>Post-hoc сравнения (Tukey HSD)</span>
+                        <span>Post-hoc сравнения (Tukey HSD, α = <span th:text="${selectedAlpha}"></span>)</span>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive">
@@ -413,7 +428,7 @@
                             <i class="bi bi-info-circle me-2"></i>
                             <strong>Интерпретация:</strong> q-значение = (разница средних) / SE.
                             Если q-значение превышает критическое значение q (q<sub>крит</sub>),
-                            различия считаются статистически значимыми (α = 0.05).
+                            различия считаются статистически значимыми (α = <span th:text="${selectedAlpha}"></span>).
                         </div>
                     </div>
                 </div>

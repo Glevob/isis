@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
@@ -23,8 +24,16 @@ public class StatisticsController {
     private final StatisticsService statisticsService;
 
     @GetMapping("/anova")
-    public String showAnovaResults(Model model) throws IOException {
-        AnovaResultDto result = statisticsService.performAnovaAnalysis();
+    public String showAnovaResults(
+            @RequestParam(name = "alpha", defaultValue = "0.05") double alpha,
+            Model model) throws IOException {
+
+        // Проверка допустимых значений alpha
+        if (alpha <= 0 || alpha >= 1) {
+            alpha = 0.05; // Значение по умолчанию при некорректном вводе
+        }
+
+        AnovaResultDto result = statisticsService.performAnovaAnalysis(alpha);
         byte[] chartImage = statisticsService.generateAnovaChart(result);
 
         Map<String, MethodStats> methodStats = statisticsService.calculateMethodStatistics();
@@ -46,14 +55,22 @@ public class StatisticsController {
         model.addAttribute("methodStats", methodStats);
         model.addAttribute("overallMean", overallMean);
         model.addAttribute("totalCount", totalCount);
+        model.addAttribute("selectedAlpha", alpha); // Добавляем выбранный alpha в модель
 
         return "/anova-results";
     }
 
     @GetMapping("/anova/chart")
     @ResponseBody
-    public ResponseEntity<byte[]> getAnovaChart() throws IOException {
-        AnovaResultDto result = statisticsService.performAnovaAnalysis();
+    public ResponseEntity<byte[]> getAnovaChart(
+            @RequestParam(name = "alpha", defaultValue = "0.05") double alpha) throws IOException {
+
+        // Проверка допустимых значений alpha
+        if (alpha <= 0 || alpha >= 1) {
+            alpha = 0.05; // Значение по умолчанию при некорректном вводе
+        }
+
+        AnovaResultDto result = statisticsService.performAnovaAnalysis(alpha);
         byte[] chartImage = statisticsService.generateAnovaChart(result);
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
