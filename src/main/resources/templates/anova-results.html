@@ -173,6 +173,19 @@
         .stat-significant {
             background-color: rgba(231, 74, 59, 0.1) !important;
         }
+        .table-custom tbody td:nth-child(6),
+        .table-custom tbody td:nth-child(7) {
+            font-family: monospace;
+            font-weight: 600;
+        }
+
+        .table-custom tbody td:nth-child(6) {
+            color: #4e73df; /* Синий для ожидаемой вероятности */
+        }
+
+        .table-custom tbody td:nth-child(7) {
+            color: #1cc88a; /* Зеленый для наблюдаемой вероятности */
+        }
     </style>
 </head>
 <body>
@@ -399,6 +412,8 @@
                                     <th>Стандартная ошибка (SE)</th>
                                     <th>q-значение</th>
                                     <th>Критическое q</th>
+                                    <th>Ожидаемая вероятность</th>
+                                    <th>Наблюдаемая вероятность</th>
                                     <th>Значимость</th>
                                 </tr>
                                 </thead>
@@ -410,14 +425,14 @@
                                     <td th:text="${#numbers.formatDecimal(comparison.standardError, 1, 4)}"></td>
                                     <td th:text="${#numbers.formatDecimal(comparison.qValue, 1, 4)}"></td>
                                     <td th:text="${#numbers.formatDecimal(comparison.criticalValue, 1, 4)}"></td>
+                                    <td th:text="${#numbers.formatPercent(comparison.expectedProbability, 1, 2)}"></td>
+                                    <td th:text="${#numbers.formatPercent(comparison.observedProbability, 1, 2)}"></td>
                                     <td th:class="${comparison.isSignificant} ? 'significance' : ''">
                                         <span th:if="${comparison.isSignificant}">
-                                            <i class="bi bi-check-circle-fill text-danger"></i> Да
-                                            (q > q<sub>крит</sub>)
+                                        <i class="bi bi-check-circle-fill text-danger"></i> Да (q > q<sub>крит</sub>)
                                         </span>
                                         <span th:unless="${comparison.isSignificant}">
-                                            <i class="bi bi-x-circle-fill text-secondary"></i> Нет
-                                            (q ≤ q<sub>крит</sub>)
+                                        <i class="bi bi-x-circle-fill text-secondary"></i> Нет (q ≤ q<sub>крит</sub>)
                                         </span>
                                     </td>
                                 </tr>
@@ -426,9 +441,14 @@
                         </div>
                         <div class="alert alert-info mt-3">
                             <i class="bi bi-info-circle me-2"></i>
-                            <strong>Интерпретация:</strong> q-значение = (разница средних) / SE.
-                            Если q-значение превышает критическое значение q (q<sub>крит</sub>),
-                            различия считаются статистически значимыми (α = <span th:text="${selectedAlpha}"></span>).
+                            <strong>Интерпретация:</strong>
+                            <ul>
+                                <li>q-значение = (разница средних) / SE</li>
+                                <li>Ожидаемая вероятность = 1 - α (уровень значимости)</li>
+                                <li>Наблюдаемая вероятность = 1 - p-значение</li>
+                            </ul>
+                            Если q-значение превышает критическое значение q (q<sub>крит</sub>) или
+                            если наблюдаемая вероятность меньше ожидаемой, различия считаются статистически значимыми (α = <span th:text="${selectedAlpha}"></span>).
                         </div>
                     </div>
                 </div>

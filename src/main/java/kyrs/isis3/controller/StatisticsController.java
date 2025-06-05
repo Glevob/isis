@@ -34,7 +34,7 @@ public class StatisticsController {
         }
 
         AnovaResultDto result = statisticsService.performAnovaAnalysis(alpha);
-        byte[] chartImage = statisticsService.generateAnovaChart(result);
+        byte[] chartImage = statisticsService.generateProbabilityChart(result);
 
         Map<String, MethodStats> methodStats = statisticsService.calculateMethodStatistics();
 
@@ -71,7 +71,7 @@ public class StatisticsController {
         }
 
         AnovaResultDto result = statisticsService.performAnovaAnalysis(alpha);
-        byte[] chartImage = statisticsService.generateAnovaChart(result);
+        byte[] chartImage = statisticsService.generateProbabilityChart(result);
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_PNG)
                 .body(chartImage);

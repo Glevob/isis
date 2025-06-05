@@ -7,6 +7,7 @@ import kyrs.isis3.repository.StudentRepository;
 import kyrs.isis3.repository.TeachingMethodRepository;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.math3.distribution.FDistribution;
+import org.apache.commons.math3.distribution.TDistribution;
 import org.apache.commons.math3.stat.inference.OneWayAnova;
 import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.CategoryChart;
@@ -189,18 +190,42 @@ public class StatisticsService {
                 // Определяем значимость
                 boolean significant = qValue > qCritical;
 
+                // Вычисляем наблюдаемую и ожидаемую вероятности
+                double observedProbability = 1 - calculateQProbability(qValue, k, df);
+                double expectedProbability = 1 - alpha;
+
                 comparisons.add(new GroupComparisonDto(
                         firstGroup,
                         secondGroup,
                         se,
                         qValue,
                         significant,
-                        qCritical
+                        qCritical,
+                        expectedProbability,
+                        observedProbability
                 ));
             }
         }
 
         return comparisons;
+    }
+
+    private double calculateQProbability(double qValue, int k, int df) {
+        // Используем аппроксимацию для вычисления p-value для q-статистики Тьюки
+        // Это приближенная реализация, так как точное вычисление требует сложных интегралов
+
+        // Для точных значений лучше использовать специализированные библиотеки,
+        // такие как Apache Commons Math или R-функции
+
+        // Аппроксимация с использованием t-распределения Стьюдента
+        double adjustedQ = qValue / Math.sqrt(2);
+        TDistribution tDist = new TDistribution(df);
+        double p = 1 - tDist.cumulativeProbability(adjustedQ);
+
+        // Коррекция для множественных сравнений
+        p = 1 - Math.pow(1 - p, k);
+
+        return p;
     }
 
     // Модифицированный метод для получения критического значения q с учетом alpha
@@ -337,7 +362,7 @@ public class StatisticsService {
         return values.stream().mapToDouble(Double::doubleValue).average().orElse(0);
     }
 
-    public byte[] generateAnovaChart(AnovaResultDto result) throws IOException {
+    public byte[] generateProbabilityChart(AnovaResultDto result) throws IOException {
         List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
                 .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
                 .collect(Collectors.toList());
@@ -346,37 +371,32 @@ public class StatisticsService {
                 .map(comp -> comp.getGroup1() + "-" + comp.getGroup2())
                 .collect(Collectors.toList());
 
-        List<Double> standardErrors = comparisons.stream()
-                .map(GroupComparisonDto::getStandardError)
+        List<Double> expectedProbabilities = comparisons.stream()
+                .map(GroupComparisonDto::getExpectedProbability)
                 .collect(Collectors.toList());
 
-        List<Double> criticalValues = comparisons.stream()
-                .map(comp -> comp.getCriticalValue() * comp.getStandardError())
+        List<Double> observedProbabilities = comparisons.stream()
+                .map(GroupComparisonDto::getObservedProbability)
                 .collect(Collectors.toList());
 
         CategoryChart chart = new CategoryChartBuilder()
                 .width(800)
                 .height(600)
-                .title("Сравнение методов обучения (Tukey HSD)")
+                .title("Вероятности сравнения методов обучения")
                 .xAxisTitle("Парные сравнения")
-                .yAxisTitle("Стандартная ошибка (SE)")
+                .yAxisTitle("Вероятность")
                 .build();
 
-        chart.addSeries("Critical SE", comparisonLabels, criticalValues)
+        chart.addSeries("Ожидаемая вероятность", comparisonLabels, expectedProbabilities)
                 .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar);
 
-        chart.addSeries("Standard Error", comparisonLabels, standardErrors)
+        chart.addSeries("Наблюдаемая вероятность", comparisonLabels, observedProbabilities)
                 .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Bar);
 
         chart.getStyler().setSeriesColors(new Color[]{
-                new Color(220, 20, 60, 100),
-                new Color(70, 130, 180)
+                new Color(0, 128, 0, 100),  // Зеленый для ожидаемой вероятности
+                new Color(255, 165, 0, 100) // Оранжевый для наблюдаемой вероятности
         });
-
-        chart.addSeries("Zero line",
-                        Arrays.asList(comparisonLabels.get(0), comparisonLabels.get(comparisonLabels.size()-1)),
-                        Arrays.asList(0.0, 0.0))
-                .setChartCategorySeriesRenderStyle(CategorySeries.CategorySeriesRenderStyle.Line);
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         BitmapEncoder.saveBitmap(chart, outputStream, BitmapEncoder.BitmapFormat.PNG);
