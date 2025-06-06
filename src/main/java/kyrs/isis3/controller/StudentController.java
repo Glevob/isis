@@ -362,21 +362,17 @@ public class StudentController {
                         continue;
                     }
 
-                    // Валидация ФИО (только буквы, пробелы и дефисы)
+                    // Валидация ФИО (только буквы, пробелы, дефисы и специальные символы, но без цифр)
                     String fullName = data[0].trim().replaceAll("^\"|\"$", "");
-                    if (!fullName.matches("^[\\p{L} -]+$")) {
-                        validationErrors.add("Некорректное ФИО: " + fullName);
+                    if (!fullName.matches("^[\\p{L} \\-/(){};:@']+$") || fullName.matches(".*\\d.*")) {
+                        validationErrors.add("Некорректное ФИО: " + fullName + " (не должны содержаться цифры)");
                         continue;
                     }
 
-                    String groupName = data[1].trim().replaceAll("^\"|\"$", "");
+                    String groupName = data[1].trim().replaceAll("^\"|\"$.,", "");
 
                     // Валидация метода обучения
                     String methodName = data[2].trim().replaceAll("^\"|\"$", "");
-//                    if (!methodName.matches("Онлайн-курсы|Очное обучение|Смешанное обучение")) {
-//                        validationErrors.add("Некорректный метод обучения: " + methodName);
-//                        continue;
-//                    }
 
                     // Валидация оценки (только 2, 3, 4 или 5)
                     String scoreStr = data[3].trim().replaceAll("^\"|\"$", "");

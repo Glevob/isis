@@ -13,6 +13,7 @@ import org.knowm.xchart.BitmapEncoder;
 import org.knowm.xchart.CategoryChart;
 import org.knowm.xchart.CategoryChartBuilder;
 import org.knowm.xchart.CategorySeries;
+import org.knowm.xchart.style.AxesChartStyler;
 import org.knowm.xchart.style.Styler;
 import org.springframework.stereotype.Service;
 
@@ -363,13 +364,19 @@ public class StatisticsService {
     }
 
     public byte[] generateProbabilityChart(AnovaResultDto result) throws IOException {
-        List<GroupComparisonDto> comparisons = result.getGroupComparisons().stream()
+        List<GroupComparisonDto> comparisons = result
+                .getGroupComparisons()
+                .stream()
                 .sorted(Comparator.comparing(comp -> comp.getGroup1() + "-" + comp.getGroup2()))
                 .collect(Collectors.toList());
 
-        List<String> comparisonLabels = comparisons.stream()
-                .map(comp -> comp.getGroup1() + "-" + comp.getGroup2())
-                .collect(Collectors.toList());
+        // Добавляем отступы для чётных/нечётных меток, чтобы они были на разных уровнях
+        List<String> comparisonLabels = new ArrayList<>();
+        for (int i = 0; i < comparisons.size(); i++) {
+            String label = comparisons.get(i).getGroup1() + "-" + comparisons.get(i).getGroup2();
+            // Чётные метки сдвигаем пробелами вправо
+            comparisonLabels.add(i % 2 == 0 ? "  " + label : label);
+        }
 
         List<Double> expectedProbabilities = comparisons.stream()
                 .map(GroupComparisonDto::getExpectedProbability)
@@ -382,7 +389,7 @@ public class StatisticsService {
         CategoryChart chart = new CategoryChartBuilder()
                 .width(800)
                 .height(600)
-                .title("Вероятности сравнения методов обучения")
+                .title("Сравнение вероятностей методов обучения")
                 .xAxisTitle("Парные сравнения")
                 .yAxisTitle("Вероятность")
                 .build();
@@ -397,6 +404,10 @@ public class StatisticsService {
                 new Color(0, 128, 0, 100),  // Зеленый для ожидаемой вероятности
                 new Color(255, 165, 0, 100) // Оранжевый для наблюдаемой вероятности
         });
+
+        // Настраиваем отображение меток на оси X
+        chart.getStyler().setXAxisLabelRotation(45); // Наклон меток для лучшей читаемости
+        chart.getStyler().setXAxisLabelAlignmentVertical(AxesChartStyler.TextAlignment.Centre); // Выравнивание по вертикали
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         BitmapEncoder.saveBitmap(chart, outputStream, BitmapEncoder.BitmapFormat.PNG);

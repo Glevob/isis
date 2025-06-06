@@ -185,6 +185,21 @@
                 width: 100%;
             }
         }
+        .search-box {
+            margin-bottom: 20px;
+        }
+        .search-input {
+            position: relative;
+        }
+        .search-input i {
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            color: #6c757d;
+        }
+        .search-input input {
+            padding-left: 35px;
+        }
     </style>
 </head>
 <body>
@@ -196,6 +211,19 @@
             <h1><i class="bi bi-people-fill me-2"></i>Студенты</h1>
             <div>
                 <span class="badge bg-primary rounded-pill" th:text="${students.size()} + ' студентов'"></span>
+            </div>
+        </div>
+
+        <!-- Добавляем строку поиска -->
+        <div class="search-box">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="search-input">
+                        <i class="bi bi-search"></i>
+                        <input type="text" id="searchInput" class="form-control" placeholder="Поиск по имени студента..."
+                               onkeyup="filterStudents()">
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -321,6 +349,22 @@
             document.getElementById('print-content').style.display = 'none';
         };
     });
+</script>
+<script>
+    function filterStudents() {
+        const input = document.getElementById('searchInput');
+        const filter = input.value.toUpperCase();
+        const cards = document.querySelectorAll('.student-card');
+
+        cards.forEach(card => {
+            const name = card.querySelector('h3').textContent.toUpperCase();
+            if (name.includes(filter)) {
+                card.style.display = '';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
 </script>
 </body>
 </html>
