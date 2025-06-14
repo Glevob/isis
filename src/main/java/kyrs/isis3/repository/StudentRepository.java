@@ -30,4 +30,6 @@ public interface StudentRepository extends JpaRepository<Student, Long>, PagingA
     @Modifying
     @Query("DELETE FROM Student s WHERE s.studentGroup = :group")
     void deleteByStudentGroup(@Param("group") StudentGroup group);
+
+    boolean existsByFullNameAndStudentGroup(String fullName, StudentGroup studentGroup);
 }

@@ -19,4 +19,5 @@ public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long
     void deleteStudentsByGroupId(@Param("studentGroupId") Long studentGroupId);
     List<StudentGroup> findByTeachingMethod(TeachingMethod teachingMethod); // Найти группы по методу обучения
 
+    boolean existsByNameGroup(String nameGroup);
 }

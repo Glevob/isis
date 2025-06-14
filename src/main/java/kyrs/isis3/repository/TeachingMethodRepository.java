@@ -8,6 +8,8 @@ import java.util.Optional;
 
 public interface TeachingMethodRepository extends JpaRepository<TeachingMethod, Long>, PagingAndSortingRepository<TeachingMethod, Long> {
     Optional<TeachingMethod> findByNameMethod(String nameMethod);
+
+    boolean existsByNameMethod(String nameMethod);
 }
 
 //public interface TeachingMethodRepository extends JpaRepository<TeachingMethod, Long> {

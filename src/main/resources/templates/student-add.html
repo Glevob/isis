@@ -84,12 +84,29 @@
                     </div>
 
                     <div class="card-body p-4">
+                        <!-- Блок для отображения успешных сообщений -->
+                        <div th:if="${success}" class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+                            <i class="bi bi-check-circle-fill me-2"></i>
+                            <span th:text="${success}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
+                        <!-- Блок для отображения ошибок -->
+                        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <span th:text="${error}"></span>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+
                         <form action="/student/add" method="post" enctype="multipart/form-data">
                             <div class="mb-3">
                                 <label for="fullName" class="form-label">ФИО студента</label>
                                 <input type="text" id="fullName" name="fullName"
                                        class="form-control form-control-lg"
-                                       placeholder="Иванов Иван Иванович" required>
+                                       placeholder="Иванов Иван Иванович"
+                                       th:value="${fullName != null} ? ${fullName} : ''"
+                                       required>
+                                <div class="form-text mt-2">Допустимы только буквы и пробелы</div>
                             </div>
 
                             <div class="mb-4">
@@ -99,7 +116,8 @@
                                     <option value="" selected disabled>Выберите группу</option>
                                     <option th:each="studentGroup : ${studentGroups}"
                                             th:value="${studentGroup.idStudentGroup}"
-                                            th:text="${studentGroup.nameGroup} + '. ' + ${studentGroup.teachingMethod.nameMethod}">
+                                            th:text="${studentGroup.nameGroup} + '. ' + ${studentGroup.teachingMethod.nameMethod}"
+                                            th:selected="${studentGroupId != null} ? ${studentGroup.idStudentGroup == studentGroupId} : false">
                                     </option>
                                 </select>
                                 <div class="mt-2">

@@ -97,19 +97,37 @@
                 <i class="bi bi-book-half form-icon"></i>
                 <h1 class="form-title">Добавление метода обучения</h1>
             </div>
+
+            <!-- Блок для отображения успешных сообщений -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Блок для отображения ошибок -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
             <form action="/teachingMethod/add" method="post">
                 <div class="mb-4">
                     <label for="nameMethod" class="form-label fw-semibold">Наименование метода обучения</label>
                     <input type="text" id="nameMethod" name="nameMethod"
                            class="form-control form-control-lg"
-                           placeholder="Введите наименование метода обучения" required>
-                    <div class="form-text">Пример: Проектное обучение, Лекция-дискуссия и т.д.</div>
+                           placeholder="Введите наименование метода обучения"
+                           th:value="${nameMethod != null} ? ${nameMethod} : ''"
+                           required>
+                    <div class="form-text">Допустимы только буквы, пробелы и дефисы. Пример: Проектное обучение, Лекция-дискуссия</div>
                 </div>
 
                 <div class="d-grid gap-2">
                     <button type="submit" class="btn btn-primary btn-lg">
                         <i class="bi bi-plus-circle me-2"></i>Добавить метод обучения
                     </button>
+                    <a href="/teachingMethod" class="btn btn-outline-secondary btn-lg mt-2">
+                        <i class="bi bi-arrow-left me-2"></i>Назад к списку методов
+                    </a>
                 </div>
             </form>
         </div>

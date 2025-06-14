@@ -69,11 +69,45 @@ public class StudentController {
     }
 
     @PostMapping("/studentGroup/add")
-    public String addStudentGroup (@RequestParam String nameGroup,
-                                   @RequestParam Long teachingMethodId, Model model) {
-        TeachingMethod teachingMethod = teachingMethodRepository.findById(teachingMethodId).orElseThrow();
-        StudentGroup studentGroup = new StudentGroup(nameGroup, teachingMethod);
-        studentGroupRepository.save(studentGroup);
+    public String addStudentGroup(@RequestParam String nameGroup,
+                                  @RequestParam Long teachingMethodId,
+                                  RedirectAttributes redirectAttributes) {
+        // Удаляем лишние пробелы
+        nameGroup = nameGroup.trim();
+
+        // Проверка на пустое название
+        if (nameGroup.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Название группы не может быть пустым");
+            return "redirect:/studentGroup/add";
+        }
+
+        // Проверка на допустимые символы (буквы, цифры, дефисы)
+        if (!nameGroup.matches("^[\\p{L}\\d-]+$")) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Название группы может содержать только буквы, цифры и дефисы");
+            return "redirect:/studentGroup/add";
+        }
+
+        try {
+            // Проверяем, не существует ли уже группы с таким названием
+            if (studentGroupRepository.existsByNameGroup(nameGroup)) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Группа с таким названием уже существует");
+                return "redirect:/studentGroup/add";
+            }
+
+            TeachingMethod teachingMethod = teachingMethodRepository.findById(teachingMethodId)
+                    .orElseThrow(() -> new IllegalArgumentException("Метод обучения не найден"));
+
+            StudentGroup studentGroup = new StudentGroup(nameGroup, teachingMethod);
+            studentGroupRepository.save(studentGroup);
+
+            redirectAttributes.addFlashAttribute("success", "Группа успешно добавлена");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Ошибка при сохранении группы: " + e.getMessage());
+        }
+
         return "redirect:/studentGroup";
     }
 
@@ -109,9 +143,38 @@ public class StudentController {
     }
 
     @PostMapping("/teachingMethod/add")
-    public String addTeachingMethod (@RequestParam String nameMethod , Model model) {
-        TeachingMethod teachingMethod = new TeachingMethod(nameMethod);
-        teachingMethodRepository.save(teachingMethod);
+    public String addTeachingMethod(@RequestParam String nameMethod,
+                                    RedirectAttributes redirectAttributes) {
+        // Удаляем лишние пробелы и проверяем на пустоту
+        nameMethod = nameMethod.trim();
+        if (nameMethod.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "Название метода не может быть пустым");
+            return "redirect:/teachingMethod/add";
+        }
+
+        // Проверяем на допустимые символы (только буквы, пробелы и дефисы)
+        if (!nameMethod.matches("^[\\p{L} -]+$")) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Название метода может содержать только буквы, пробелы и дефисы");
+            return "redirect:/teachingMethod/add";
+        }
+
+        try {
+            // Проверяем, не существует ли уже метода с таким названием
+            if (teachingMethodRepository.existsByNameMethod(nameMethod)) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Метод обучения с таким названием уже существует");
+                return "redirect:/teachingMethod/add";
+            }
+
+            TeachingMethod teachingMethod = new TeachingMethod(nameMethod);
+            teachingMethodRepository.save(teachingMethod);
+            redirectAttributes.addFlashAttribute("success", "Метод обучения успешно добавлен");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Ошибка при сохранении метода обучения: " + e.getMessage());
+        }
+
         return "redirect:/teachingMethod";
     }
 
@@ -146,10 +209,43 @@ public class StudentController {
     @PostMapping("/student/add")
     public String addStudent(@RequestParam Long studentGroupId,
                              @RequestParam String fullName,
-                             Model model) {
-        StudentGroup studentGroup = studentGroupRepository.findById(studentGroupId).orElseThrow();
-        Student student = new Student(fullName, studentGroup);
-        studentRepository.save(student);
+                             RedirectAttributes redirectAttributes) {
+        // Удаляем лишние пробелы по краям
+        fullName = fullName.trim();
+
+        // Проверка на пустое ФИО
+        if (fullName.isEmpty()) {
+            redirectAttributes.addFlashAttribute("error", "ФИО студента не может быть пустым");
+            return "redirect:/student/add";
+        }
+
+        // Проверка на допустимые символы (только буквы и пробелы)
+        if (!fullName.matches("^[\\p{L} ]+$")) {
+            redirectAttributes.addFlashAttribute("error",
+                    "ФИО может содержать только буквы и пробелы");
+            return "redirect:/student/add";
+        }
+
+        try {
+            StudentGroup studentGroup = studentGroupRepository.findById(studentGroupId)
+                    .orElseThrow(() -> new IllegalArgumentException("Группа не найдена"));
+
+            // Проверка на существование студента в группе
+            if (studentRepository.existsByFullNameAndStudentGroup(fullName, studentGroup)) {
+                redirectAttributes.addFlashAttribute("error",
+                        "Студент с таким ФИО уже существует в этой группе");
+                return "redirect:/student/add";
+            }
+
+            Student student = new Student(fullName, studentGroup);
+            studentRepository.save(student);
+
+            redirectAttributes.addFlashAttribute("success", "Студент успешно добавлен");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error",
+                    "Ошибка при добавлении студента: " + e.getMessage());
+        }
+
         return "redirect:/student";
     }
 

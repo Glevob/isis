@@ -92,12 +92,29 @@
         <div class="form-container">
             <h1><i class="bi bi-people-fill me-2"></i>Добавление группы</h1>
 
+            <!-- Блок для отображения успешных сообщений -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="bi bi-check-circle-fill me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Блок для отображения ошибок -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
             <form action="/studentGroup/add" method="post">
                 <div class="mb-3">
                     <label for="nameGroup" class="form-label">Наименование группы</label>
                     <input type="text" name="nameGroup" id="nameGroup"
                            placeholder="Введите наименование группы"
-                           class="form-control form-control-lg" required>
+                           class="form-control form-control-lg"
+                           th:value="${nameGroup != null} ? ${nameGroup} : ''"
+                           required>
+                    <div class="form-text mt-2">Допустимы только буквы, цифры и дефисы. Пример: ИС-42, Группа1</div>
                 </div>
 
                 <div class="mb-4">
@@ -107,7 +124,9 @@
                         <option value="" selected disabled>Выберите метод обучения</option>
                         <option th:each="teachingMethod : ${teachingMethods}"
                                 th:value="${teachingMethod.idTeachingMethod}"
-                                th:text="${teachingMethod.getNameMethod()}"></option>
+                                th:text="${teachingMethod.getNameMethod()}"
+                                th:selected="${teachingMethodId != null} ? ${teachingMethod.idTeachingMethod == teachingMethodId} : false">
+                        </option>
                     </select>
 
                     <div class="mt-2 text-end">
