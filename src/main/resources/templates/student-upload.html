@@ -215,16 +215,26 @@
                 <i class="bi bi-people-fill me-2"></i>Загрузка студентов из CSV
             </h1>
 
-            <div th:if="${message}" class="alert alert-info alert-dismissible fade show" role="alert" th:text="${message}">
+            <!-- Блок для отображения успешных сообщений -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+                <span th:text="${success}"></span>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
 
+            <!-- Блок для отображения общих ошибок -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+
+            <!-- Блок для отображения ошибок валидации -->
             <div th:if="${validationErrors}" class="alert alert-danger mt-4">
                 <h5><i class="bi bi-exclamation-triangle-fill me-2"></i>Ошибки при обработке файла:</h5>
                 <ul class="mb-0">
                     <li th:each="error : ${validationErrors}" th:text="${error}"></li>
                 </ul>
             </div>
+
 
             <form method="POST" action="/student/upload" enctype="multipart/form-data">
                 <div class="mb-4">

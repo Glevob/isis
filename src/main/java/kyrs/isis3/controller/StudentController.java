@@ -315,7 +315,7 @@ public class StudentController {
                                  RedirectAttributes redirectAttributes) {
 
         if (file.isEmpty()) {
-            redirectAttributes.addFlashAttribute("message", "Пожалуйста, выберите файл для загрузки");
+            redirectAttributes.addFlashAttribute("error", "Пожалуйста, выберите файл для загрузки");
             return "redirect:/student/upload";
         }
 
@@ -331,27 +331,51 @@ public class StudentController {
 
             String line;
             int count = 0;
+            int lineNumber = 1;
+            List<String> validationErrors = new ArrayList<>();
+
             while ((line = reader.readLine()) != null) {
-                String[] data = line.split(",");
-                if (data.length >= 1) {
-                    String fullName = data[0].trim();
-                    if (!fullName.isEmpty()) {
+                lineNumber++;
+                try {
+                    String[] data = line.split(",");
+                    if (data.length >= 1) {
+                        String fullName = data[0].trim();
+
+                        // Пропускаем пустые строки
+                        if (fullName.isEmpty()) {
+                            continue;
+                        }
+
+                        // Валидация ФИО (только буквы, пробелы и дефисы)
+                        if (!fullName.matches("^[\\p{L} -]+$")) {
+                            validationErrors.add("Строка " + lineNumber + ": Некорректное ФИО - '" + fullName +
+                                    "'. Допустимы только буквы, пробелы и дефис.");
+                            continue;
+                        }
+
                         Student student = new Student(fullName, group);
                         studentRepository.save(student);
                         count++;
                     }
+                } catch (Exception e) {
+                    validationErrors.add("Строка " + lineNumber + ": Ошибка обработки - " + e.getMessage());
                 }
             }
 
-            redirectAttributes.addFlashAttribute("message",
-                    "Успешно загружено " + count + " студентов в группу " + group.getNameGroup());
+            if (!validationErrors.isEmpty()) {
+                redirectAttributes.addFlashAttribute("validationErrors", validationErrors);
+            }
+
+            redirectAttributes.addFlashAttribute("success",
+                    "Успешно загружено " + count + " студентов в группу " + group.getNameGroup() +
+                            (validationErrors.isEmpty() ? "" : ". Найдено ошибок: " + validationErrors.size()));
 
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("message",
+            redirectAttributes.addFlashAttribute("error",
                     "Ошибка при загрузке файла: " + e.getMessage());
         }
 
-        return "redirect:/student";
+        return "redirect:/student/upload";
     }
 
 
