@@ -210,8 +210,8 @@ public class StudentController {
     public String addStudent(@RequestParam Long studentGroupId,
                              @RequestParam String fullName,
                              RedirectAttributes redirectAttributes) {
-        // Удаляем лишние пробелы по краям
-        fullName = fullName.trim();
+        // Удаляем лишние пробелы по краям и заменяем множественные пробелы одним
+        fullName = fullName.trim().replaceAll("\\s+", " ");
 
         // Проверка на пустое ФИО
         if (fullName.isEmpty()) {
@@ -223,6 +223,13 @@ public class StudentController {
         if (!fullName.matches("^[\\p{L} ]+$")) {
             redirectAttributes.addFlashAttribute("error",
                     "ФИО может содержать только буквы и пробелы");
+            return "redirect:/student/add";
+        }
+
+        // Проверка на ровно два пробела (Фамилия Имя Отчество)
+        if (fullName.split(" ").length != 3) {
+            redirectAttributes.addFlashAttribute("error",
+                    "ФИО должно состоять из трёх компонентов (Фамилия Имя Отчество), разделённых ровно двумя пробелами");
             return "redirect:/student/add";
         }
 
