@@ -380,20 +380,32 @@ public class StudentController {
             AtomicInteger gradeUpdatedCount = new AtomicInteger(0);
             AtomicInteger gradeCount = new AtomicInteger(0);
             List<String> validationErrors = new ArrayList<>();
+            int lineNumber = 1;
 
             while ((line = reader.readLine()) != null) {
+                lineNumber++;
                 try {
+                    // Пропускаем пустые строки
+                    if (line.trim().isEmpty()) {
+                        continue;
+                    }
+
                     String[] data = line.split(",");
 
-                    if (data.length != 6) {
-                        validationErrors.add("Некорректное количество полей в строке: " + line);
+                    // Проверка на минимальное количество полей (6)
+                    if (data.length < 6) {
+                        validationErrors.add("Строка " + lineNumber + ": Недостаточно данных. Требуется 6 полей, получено " + data.length);
                         continue;
                     }
 
                     // Валидация ФИО (только буквы, пробелы, дефисы и специальные символы, но без цифр)
                     String fullName = data[0].trim().replaceAll("^\"|\"$", "");
+//                    if (fullName.isEmpty()) {
+//                        validationErrors.add("Строка " + lineNumber + ": Не указано ФИО студента");
+//                        continue;
+//                    }
                     if (!fullName.matches("^[\\p{L} -]+$")) {
-                        validationErrors.add("Некорректное ФИО: " + fullName + " (допустимы только буквы, пробелы и дефисы)");
+                        validationErrors.add("Строка " + lineNumber + ": Некорректное ФИО: " + fullName);
                         continue;
                     }
 
@@ -405,7 +417,7 @@ public class StudentController {
                     // Валидация оценки (только 2, 3, 4 или 5)
                     String scoreStr = data[3].trim().replaceAll("^\"|\"$", "");
                     if (!scoreStr.matches("[2-5]")) {
-                        validationErrors.add("Некорректная оценка: " + scoreStr);
+                        validationErrors.add("Строка " + lineNumber + ": Некорректная оценка: " + scoreStr);
                         continue;
                     }
                     double score = Double.parseDouble(scoreStr);
@@ -413,7 +425,7 @@ public class StudentController {
                     // Валидация даты (только цифры и разделители - или .)
                     String dateStr = data[4].trim().replaceAll("^\"|\"$", "");
                     if (!dateStr.matches("^\\d{4}[-.]\\d{2}[-.]\\d{2}$")) {
-                        validationErrors.add("Некорректный формат даты: " + dateStr);
+                        validationErrors.add("Строка " + lineNumber + ": Некорректный формат даты: " + dateStr);
                         continue;
                     }
                     // Заменяем точки на дефисы для парсинга
@@ -465,7 +477,7 @@ public class StudentController {
                     }
 
                 } catch (Exception e) {
-                    validationErrors.add("Ошибка обработки строки: " + line + " - " + e.getMessage());
+                    validationErrors.add("Строка " + lineNumber + ": Ошибка обработки - " + e.getMessage());
                 }
             }
 
