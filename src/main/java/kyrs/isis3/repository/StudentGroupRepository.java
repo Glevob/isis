@@ -1,6 +1,7 @@
 package kyrs.isis3.repository;
 
 import kyrs.isis3.model.StudentGroup;
+import kyrs.isis3.model.TeachingMethod;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -16,6 +17,6 @@ public interface StudentGroupRepository extends JpaRepository<StudentGroup, Long
     @Modifying
     @Query("DELETE FROM Student s WHERE s.studentGroup.idStudentGroup = :studentGroupId")
     void deleteStudentsByGroupId(@Param("studentGroupId") Long studentGroupId);
+    List<StudentGroup> findByTeachingMethod(TeachingMethod teachingMethod); // Найти группы по методу обучения
 
-    
 }

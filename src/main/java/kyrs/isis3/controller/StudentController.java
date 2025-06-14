@@ -59,7 +59,7 @@ public class StudentController {
         model.addAttribute("title", "Студенты");
         Iterable<Student> students = studentRepository.findAll();
         model.addAttribute("students", students);
-        return "studentAnon";
+        return "Stanon";
     }
 
     @GetMapping("/studentGroup/add")
@@ -112,6 +112,34 @@ public class StudentController {
     public String addTeachingMethod (@RequestParam String nameMethod , Model model) {
         TeachingMethod teachingMethod = new TeachingMethod(nameMethod);
         teachingMethodRepository.save(teachingMethod);
+        return "redirect:/teachingMethod";
+    }
+
+    @Transactional
+    @DeleteMapping("/teachingMethod/{id}")
+    public String deleteTeachingMethodWithGroupsAndStudents(@PathVariable Long id) {
+        Optional<TeachingMethod> teachingMethodOptional = teachingMethodRepository.findById(id);
+        if (teachingMethodOptional.isPresent()) {
+            TeachingMethod teachingMethod = teachingMethodOptional.get();
+
+            // Получаем все группы этого метода
+            List<StudentGroup> groups = studentGroupRepository.findByTeachingMethod(teachingMethod);
+
+            // Для каждой группы удаляем студентов и их оценки
+            for (StudentGroup group : groups) {
+                // Удаляем оценки студентов этой группы
+                gradeRepository.deleteByStudent_StudentGroup(group);
+
+                // Удаляем студентов этой группы
+                studentRepository.deleteByStudentGroup(group);
+
+                // Удаляем саму группу
+                studentGroupRepository.delete(group);
+            }
+
+            // Удаляем сам метод обучения
+            teachingMethodRepository.delete(teachingMethod);
+        }
         return "redirect:/teachingMethod";
     }
 

@@ -25,4 +25,9 @@ public interface StudentRepository extends JpaRepository<Student, Long>, PagingA
     List<Student> findByStudentGroupTeachingMethodIdTeachingMethod(Long methodId);
     List<Student> findByStudentGroupIdStudentGroupAndStudentGroupTeachingMethodIdTeachingMethod(
             Long groupId, Long methodId);
+
+    // Удалить студентов по группе
+    @Modifying
+    @Query("DELETE FROM Student s WHERE s.studentGroup = :group")
+    void deleteByStudentGroup(@Param("group") StudentGroup group);
 }

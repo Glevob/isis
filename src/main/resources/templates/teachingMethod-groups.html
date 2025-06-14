@@ -36,6 +36,14 @@
       </h1>
       <div>
         <a th:href="@{/studentGroup/add}" class="btn btn-primary me-2">Добавить группу</a>
+        <button type="button" class="btn btn-danger me-2"
+                data-bs-toggle="modal"
+                data-bs-target="#deleteMethodModal"
+                th:attr="data-bs-methodid=${teachingMethod.idTeachingMethod},
+                        data-bs-methodname=${teachingMethod.nameMethod},
+                        data-bs-groupcount=${studentGroups.size()}">
+          Удалить метод
+        </button>
         <a th:href="@{/teachingMethod}" class="btn btn-outline-secondary">Назад к методам</a>
       </div>
     </div>
@@ -56,7 +64,7 @@
                class="btn btn-sm btn-outline-primary">Студенты</a>
             <button type="button" class="btn btn-sm btn-outline-danger"
                     data-bs-toggle="modal"
-                    data-bs-target="#deleteModal"
+                    data-bs-target="#deleteGroupModal"
                     th:attr="data-bs-groupid=${studentGroup.idStudentGroup},
                             data-bs-groupname=${studentGroup.nameGroup},
                             data-bs-studentcount=${studentGroup.students.size()}">
@@ -68,23 +76,52 @@
     </div>
   </div>
 </div>
-<!-- Модальное окно подтверждения удаления -->
-<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+
+<!-- Модальное окно подтверждения удаления группы -->
+<div class="modal fade" id="deleteGroupModal" tabindex="-1" aria-labelledby="deleteGroupModalLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="deleteModalLabel">Подтверждение удаления</h5>
+        <h5 class="modal-title" id="deleteGroupModalLabel">Подтверждение удаления</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <p>Вы действительно хотите удалить группу <span id="groupName" class="fw-bold"></span>?</p>
-        <p class="text-danger">Будет также удалено <span id="studentCount" class="fw-bold"></span> студентов этой группы!</p>
+        <p class="text-danger">Будет также удалено <span id="studentCount" class="fw-bold"></span> студентов этой группы и все их оценки!</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
-        <form id="deleteForm" method="post">
+        <form id="deleteGroupForm" method="post">
           <input type="hidden" name="_method" value="delete">
           <button type="submit" class="btn btn-danger">Удалить</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Модальное окно подтверждения удаления метода -->
+<div class="modal fade" id="deleteMethodModal" tabindex="-1" aria-labelledby="deleteMethodModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteMethodModalLabel">Подтверждение удаления метода</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>Вы действительно хотите удалить метод обучения <span id="methodName" class="fw-bold"></span>?</p>
+        <p class="text-danger">Будет также удалено:</p>
+        <ul class="text-danger">
+          <li><span id="groupCount" class="fw-bold"></span> групп</li>
+          <li>Все студенты этих групп</li>
+          <li>Все оценки этих студентов</li>
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Отмена</button>
+        <form th:action="@{'/teachingMethod/' + ${teachingMethod.idTeachingMethod}}" method="post">
+          <input type="hidden" name="_method" value="delete">
+          <button type="submit" class="btn btn-danger">Удалить метод</button>
         </form>
       </div>
     </div>
@@ -98,17 +135,33 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const deleteModal = document.getElementById('deleteModal');
-    deleteModal.addEventListener('show.bs.modal', function(event) {
-      const button = event.relatedTarget;
-      const groupId = button.getAttribute('data-bs-groupid');
-      const groupName = button.getAttribute('data-bs-groupname');
-      const studentCount = button.getAttribute('data-bs-studentcount');
+    // Обработчик для модального окна удаления группы
+    const deleteGroupModal = document.getElementById('deleteGroupModal');
+    if (deleteGroupModal) {
+      deleteGroupModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const groupId = button.getAttribute('data-bs-groupid');
+        const groupName = button.getAttribute('data-bs-groupname');
+        const studentCount = button.getAttribute('data-bs-studentcount');
 
-      document.getElementById('groupName').textContent = groupName;
-      document.getElementById('studentCount').textContent = studentCount;
-      document.getElementById('deleteForm').action = '/studentGroup/' + groupId;
-    });
+        document.getElementById('groupName').textContent = groupName;
+        document.getElementById('studentCount').textContent = studentCount;
+        document.getElementById('deleteGroupForm').action = '/studentGroup/' + groupId;
+      });
+    }
+
+    // Обработчик для модального окна удаления метода
+    const deleteMethodModal = document.getElementById('deleteMethodModal');
+    if (deleteMethodModal) {
+      deleteMethodModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        const methodName = button.getAttribute('data-bs-methodname');
+        const groupCount = button.getAttribute('data-bs-groupcount');
+
+        document.getElementById('methodName').textContent = methodName;
+        document.getElementById('groupCount').textContent = groupCount;
+      });
+    }
   });
 </script>
 </body>

@@ -3,6 +3,7 @@ package kyrs.isis3.repository;
 import jakarta.transaction.Transactional;
 import kyrs.isis3.model.Grade;
 import kyrs.isis3.model.Student;
+import kyrs.isis3.model.StudentGroup;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -37,4 +38,9 @@ public interface GradeRepository extends JpaRepository<Grade, Long> {
     @Modifying
     @Query("DELETE FROM Grade g WHERE g.student = :student")
     void deleteByStudent(@Param("student") Student student);
+
+    // Удалить оценки студентов определенной группы
+    @Modifying
+    @Query("DELETE FROM Grade g WHERE g.student IN (SELECT s FROM Student s WHERE s.studentGroup = :group)")
+    void deleteByStudent_StudentGroup(@Param("group") StudentGroup group);
 }
