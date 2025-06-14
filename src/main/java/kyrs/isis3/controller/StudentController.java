@@ -392,8 +392,8 @@ public class StudentController {
 
                     // Валидация ФИО (только буквы, пробелы, дефисы и специальные символы, но без цифр)
                     String fullName = data[0].trim().replaceAll("^\"|\"$", "");
-                    if (!fullName.matches("^[\\p{L} \\-/(){};:@']+$") || fullName.matches(".*\\d.*")) {
-                        validationErrors.add("Некорректное ФИО: " + fullName + " (не должны содержаться цифры)");
+                    if (!fullName.matches("^[\\p{L} -]+$")) {
+                        validationErrors.add("Некорректное ФИО: " + fullName + " (допустимы только буквы, пробелы и дефисы)");
                         continue;
                     }
 
@@ -482,6 +482,6 @@ public class StudentController {
                     "Ошибка при обработке файла: " + e.getMessage());
         }
 
-        return "redirect:/student";
+        return "redirect:/all/upload";
     }
 }

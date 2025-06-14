@@ -190,7 +190,17 @@
                 <i class="bi bi-cloud-arrow-up-fill me-2"></i>Загрузка студентов из CSV
             </h1>
 
-            <div th:if="${message}" class="alert alert-info alert-custom" th:text="${message}"></div>
+            <!-- Отображение flash-сообщений -->
+            <div th:if="${success}" class="alert alert-success alert-custom" th:text="${success}"></div>
+            <div th:if="${error}" class="alert alert-danger alert-custom" th:text="${error}"></div>
+
+            <!-- Блок ошибок валидации -->
+            <div th:if="${validationErrors}" class="alert alert-danger mt-4">
+                <h5><i class="bi bi-exclamation-triangle-fill me-2"></i>Ошибки при обработке файла:</h5>
+                <ul class="mb-0">
+                    <li th:each="error : ${validationErrors}" th:text="${error}"></li>
+                </ul>
+            </div>
 
             <form method="POST" action="/all/upload" enctype="multipart/form-data">
                 <div class="file-upload-wrapper">
