@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ошибка анализа</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        .error-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.1);
+        }
+        .error-icon {
+            font-size: 5rem;
+            color: #e74a3b;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{blocks/header :: header}"></div>
+
+<div class="container">
+    <div class="error-container text-center">
+        <i class="bi bi-exclamation-triangle-fill error-icon"></i>
+        <h1 class="mb-4">Недостаточно данных для анализа</h1>
+        <p class="lead mb-4" th:text="${errorMessage}"></p>
+        <div class="d-grid gap-2 d-md-block">
+            <a href="/studentGroup" class="btn btn-primary">
+                <i class="bi bi-arrow-left me-2"></i>
+                Вернуться к списку групп
+            </a>
+            <a href="/home" class="btn btn-secondary ms-2">
+                <i class="bi bi-house me-2"></i>
+                На главную
+            </a>
+        </div>
+    </div>
+</div>
+
+<div th:insert="~{blocks/footer :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

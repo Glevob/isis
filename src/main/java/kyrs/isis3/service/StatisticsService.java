@@ -413,4 +413,18 @@ public class StatisticsService {
         BitmapEncoder.saveBitmap(chart, outputStream, BitmapEncoder.BitmapFormat.PNG);
         return outputStream.toByteArray();
     }
+
+    public boolean hasEnoughDataForAnova() {
+        Map<String, MethodStats> stats = calculateMethodStatistics();
+        if (stats.isEmpty()) {
+            return false;
+        }
+
+        // Проверяем, что есть хотя бы 2 группы с достаточным количеством данных
+        long groupsWithEnoughData = stats.values().stream()
+                .filter(ms -> ms.getCount() >= 2) // минимум 2 наблюдения в группе
+                .count();
+
+        return groupsWithEnoughData >= 2; // минимум 2 группы для сравнения
+    }
 }

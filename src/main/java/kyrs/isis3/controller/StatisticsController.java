@@ -33,36 +33,48 @@ public class StatisticsController {
             alpha = 0.05; // Значение по умолчанию при некорректном вводе
         }
 
-        AnovaResultDto result = statisticsService.performAnovaAnalysis(alpha);
-        byte[] chartImage = statisticsService.generateProbabilityChart(result);
+        // Проверка наличия достаточных данных для анализа
+        if (!statisticsService.hasEnoughDataForAnova()) {
+            model.addAttribute("errorMessage", "Недостаточно данных для проведения ANOVA анализа. " +
+                    "Пожалуйста, добавьте данные о студентах и их успеваемости.");
+            return "anova-error"; // Возвращаем специальную страницу с ошибкой
+        }
 
-        Map<String, MethodStats> methodStats = statisticsService.calculateMethodStatistics();
+        try {
+            AnovaResultDto result = statisticsService.performAnovaAnalysis(alpha);
+            byte[] chartImage = statisticsService.generateProbabilityChart(result);
 
-        // Calculate overall mean and total count
-        double overallMean = methodStats.values().stream()
-                .mapToDouble(ms -> ms.getMean() * ms.getCount())
-                .sum() /
-                methodStats.values().stream()
-                        .mapToLong(MethodStats::getCount)
-                        .sum();
+            Map<String, MethodStats> methodStats = statisticsService.calculateMethodStatistics();
 
-        long totalCount = methodStats.values().stream()
-                .mapToLong(MethodStats::getCount)
-                .sum();
+            // Calculate overall mean and total count
+            double overallMean = methodStats.values().stream()
+                    .mapToDouble(ms -> ms.getMean() * ms.getCount())
+                    .sum() /
+                    methodStats.values().stream()
+                            .mapToLong(MethodStats::getCount)
+                            .sum();
 
-        model.addAttribute("anovaResult", result);
-        model.addAttribute("chartImage", Base64.getEncoder().encodeToString(chartImage));
-        model.addAttribute("methodStats", methodStats);
-        model.addAttribute("overallMean", overallMean);
-        model.addAttribute("totalCount", totalCount);
-        model.addAttribute("selectedAlpha", alpha); // Добавляем выбранный alpha в модель
+            long totalCount = methodStats.values().stream()
+                    .mapToLong(MethodStats::getCount)
+                    .sum();
 
-        return "/anova-results";
+            model.addAttribute("anovaResult", result);
+            model.addAttribute("chartImage", Base64.getEncoder().encodeToString(chartImage));
+            model.addAttribute("methodStats", methodStats);
+            model.addAttribute("overallMean", overallMean);
+            model.addAttribute("totalCount", totalCount);
+            model.addAttribute("selectedAlpha", alpha);
+
+            return "/anova-results";
+        } catch (IllegalStateException e) {
+            model.addAttribute("errorMessage", e.getMessage());
+            return "anova-error";
+        }
     }
 
     @GetMapping("/anova/chart")
     @ResponseBody
-    public ResponseEntity<byte[]> getAnovaChart(
+    public ResponseEntity<?> getAnovaChart(
             @RequestParam(name = "alpha", defaultValue = "0.05") double alpha) throws IOException {
 
         // Проверка допустимых значений alpha
@@ -70,10 +82,23 @@ public class StatisticsController {
             alpha = 0.05; // Значение по умолчанию при некорректном вводе
         }
 
-        AnovaResultDto result = statisticsService.performAnovaAnalysis(alpha);
-        byte[] chartImage = statisticsService.generateProbabilityChart(result);
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_PNG)
-                .body(chartImage);
+        // Проверка наличия достаточных данных для анализа
+        if (!statisticsService.hasEnoughDataForAnova()) {
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body("Недостаточно данных для построения графика. Добавьте данные о студентах.");
+        }
+
+        try {
+            AnovaResultDto result = statisticsService.performAnovaAnalysis(alpha);
+            byte[] chartImage = statisticsService.generateProbabilityChart(result);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.IMAGE_PNG)
+                    .body(chartImage);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest()
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .body(e.getMessage());
+        }
     }
 }
