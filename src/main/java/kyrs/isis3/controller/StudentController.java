@@ -366,16 +366,16 @@ public class StudentController {
         // Получаем студентов с их оценками
         List<Student> students = studentRepository.findByStudentGroupIdStudentGroupWithGrades(studentGroupId);
 
-        // Собираем уникальные даты всех оценок
-        Set<LocalDate> distinctDates = students.stream()
+        // Собираем уникальные названия тестов
+        Set<String> distinctTestNames = students.stream()
                 .flatMap(s -> s.getGrades().stream())
-                .map(Grade::getTestDate)
+                .map(Grade::getTestName)
                 .sorted()
                 .collect(Collectors.toCollection(LinkedHashSet::new));
 
         model.addAttribute("studentGroup", studentGroup);
         model.addAttribute("studentsWithGrades", students);
-        model.addAttribute("distinctDates", distinctDates);
+        model.addAttribute("distinctTestNames", distinctTestNames);
         return "group-grades";
     }
 

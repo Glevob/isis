@@ -48,17 +48,17 @@
         <thead class="table-light">
         <tr>
           <th class="student-name">ФИО</th>
-          <th th:each="date : ${distinctDates}"
-              th:text="${#temporals.format(date, 'dd.MM.yyyy')}"
+          <th th:each="testName : ${distinctTestNames}"
+              th:text="${testName}"
               class="grade-cell"></th>
         </tr>
         </thead>
         <tbody>
         <tr th:each="student : ${studentsWithGrades}">
           <td class="student-name" th:text="${student.fullName}"></td>
-          <td th:each="date : ${distinctDates}" class="grade-cell">
+          <td th:each="testName : ${distinctTestNames}" class="grade-cell">
               <span th:each="grade : ${student.grades}"
-                    th:if="${grade.testDate == date}"
+                    th:if="${grade.testName == testName}"
                     th:text="${grade.valueScore}">-</span>
           </td>
         </tr>
